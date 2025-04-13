@@ -6,6 +6,7 @@ const String signUpScreenRoute = "signup";
 const String profileSetupScreenRoute = "profile_setup";
 const String signUpVerificationScreenRoute = "signup_verification";
 const String passwordRecoveryScreenRoute = "password_recovery";
+const String passwordResetScreenRoute = "password_reset";
 const String verificationMethodScreenRoute = "verification_method";
 const String otpScreenRoute = "otp";
 const String newPasswordScreenRoute = "new_password";

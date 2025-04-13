@@ -4,12 +4,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../constants.dart';
 
 class LogInForm extends StatelessWidget {
-  const LogInForm({
+  LogInForm({
     super.key,
     required this.formKey,
+    required this.emailController,
+    required this.passwordController,
   });
 
   final GlobalKey<FormState> formKey;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +22,7 @@ class LogInForm extends StatelessWidget {
       child: Column(
         children: [
           TextFormField(
+            controller: emailController,
             onSaved: (emal) {
               // Email
             },
@@ -46,10 +51,11 @@ class LogInForm extends StatelessWidget {
           ),
           const SizedBox(height: defaultPadding),
           TextFormField(
+            controller: passwordController,
             onSaved: (pass) {
               // Password
             },
-            validator: passwordValidator.call,
+            //validator: passwordValidator.call,
             obscureText: true,
             decoration: InputDecoration(
               hintText: "Password",

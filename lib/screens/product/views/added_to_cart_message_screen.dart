@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/screen_export.dart';
+import 'package:padly/constants.dart';
+import 'package:padly/route/screen_export.dart';
 
 class AddedToCartMessageScreen extends StatelessWidget {
   const AddedToCartMessageScreen({super.key});

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "660414913563",
+    "project_id": "padly-auth-001-5917c",
+    "storage_bucket": "padly-auth-001-5917c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660414913563:android:f4e6298058794831ed2cbe",
+        "android_client_info": {
+          "package_name": "io.padly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz2iYmJoTMEa8iFsK6s3ibpIZlM1rT61I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

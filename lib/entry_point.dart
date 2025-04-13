@@ -1,8 +1,11 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/screen_export.dart';
+import 'package:padly/constants.dart';
+import 'package:padly/route/screen_export.dart';
+import 'package:padly/screens/chat/src/view/rooms/chat_screen.dart';
+
+import 'screens/chat/src/view/users/users_screen.dart';
 
 class EntryPoint extends StatefulWidget {
   const EntryPoint({super.key});
@@ -13,11 +16,13 @@ class EntryPoint extends StatefulWidget {
 
 class _EntryPointState extends State<EntryPoint> {
   final List _pages = const [
-    HomeScreen(),
-    DiscoverScreen(),
-    BookmarkScreen(),
+    ChatScreen(),
+    UsersScreen(),
+    //HomeScreen(),
+    //DiscoverScreen(),
+    //BookmarkScreen(),
     // EmptyCartScreen(), // if Cart is empty
-    CartScreen(),
+    //CartScreen(),
     ProfileScreen(),
   ];
   int _currentIndex = 0;
@@ -45,13 +50,10 @@ class _EntryPointState extends State<EntryPoint> {
         leading: const SizedBox(),
         leadingWidth: 0,
         centerTitle: false,
-        title: SvgPicture.asset(
-          "assets/logo/Shoplon.svg",
-          colorFilter: ColorFilter.mode(
-              Theme.of(context).iconTheme.color!, BlendMode.srcIn),
-          height: 20,
-          width: 100,
-        ),
+        title: Text(
+          "Padly",
+          style: Theme.of(context).textTheme.titleLarge,
+        ), //!.copyWith(color: Theme.of(context).)),
         actions: [
           IconButton(
             onPressed: () {
@@ -115,11 +117,17 @@ class _EntryPointState extends State<EntryPoint> {
           unselectedItemColor: Colors.transparent,
           items: [
             BottomNavigationBarItem(
-              icon: svgIcon("assets/icons/Shop.svg"),
-              activeIcon: svgIcon("assets/icons/Shop.svg", color: primaryColor),
-              label: "Shop",
+              icon: svgIcon("assets/icons/Chat.svg"),
+              activeIcon: svgIcon("assets/icons/Chat.svg", color: primaryColor),
+              label: "Chat",
             ),
             BottomNavigationBarItem(
+              icon: svgIcon("assets/icons/Chat-add.svg"),
+              activeIcon:
+                  svgIcon("assets/icons/Chat-add.svg", color: primaryColor),
+              label: "Users",
+            ),
+            /*BottomNavigationBarItem(
               icon: svgIcon("assets/icons/Category.svg"),
               activeIcon:
                   svgIcon("assets/icons/Category.svg", color: primaryColor),
@@ -135,7 +143,7 @@ class _EntryPointState extends State<EntryPoint> {
               icon: svgIcon("assets/icons/Bag.svg"),
               activeIcon: svgIcon("assets/icons/Bag.svg", color: primaryColor),
               label: "Cart",
-            ),
+            ),*/
             BottomNavigationBarItem(
               icon: svgIcon("assets/icons/Profile.svg"),
               activeIcon:

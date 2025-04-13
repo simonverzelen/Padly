@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:padly/constants.dart';
+import 'package:padly/route/route_constants.dart';
+import 'package:padly/screens/auth/domain/auth_service.dart';
 
 import 'components/login_form.dart';
 
@@ -12,7 +13,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthService authService = AuthService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           children: [
             Image.asset(
-              "assets/images/login_dark.png",
+              "assets/images/login-screen.jpg",
               fit: BoxFit.cover,
+              height: MediaQuery.of(context).size.height * 0.35,
+              width: MediaQuery.of(context).size.width,
             ),
             Padding(
               padding: const EdgeInsets.all(defaultPadding),
@@ -40,28 +47,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Log in with your data that you intered during your registration.",
                   ),
                   const SizedBox(height: defaultPadding),
-                  LogInForm(formKey: _formKey),
+                  LogInForm(
+                    formKey: _formKey,
+                    emailController: emailController,
+                    passwordController: passwordController,
+                  ),
                   Align(
                     child: TextButton(
                       child: const Text("Forgot password"),
                       onPressed: () {
-                        Navigator.pushNamed(
-                            context, passwordRecoveryScreenRoute);
+                        Navigator.pushNamed(context, passwordResetScreenRoute);
                       },
                     ),
                   ),
                   SizedBox(
-                    height: size.height > 700
-                        ? size.height * 0.1
-                        : defaultPadding,
+                    height:
+                        size.height > 700 ? size.height * 0.1 : defaultPadding,
                   ),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            entryPointScreenRoute,
-                            ModalRoute.withName(logInScreenRoute));
+                        authService.signin(
+                          email: emailController.text,
+                          password: passwordController.text,
+                          context: context,
+                        );
                       }
                     },
                     child: const Text("Log in"),

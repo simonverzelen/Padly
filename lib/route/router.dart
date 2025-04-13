@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shop/entry_point.dart';
+import 'package:padly/entry_point.dart';
 
+import '../screens/auth/views/password_recovery.dart';
 import 'screen_export.dart';
 
 // Yuo will get 50+ screens and more once you have the full template
@@ -87,6 +88,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case passwordRecoveryScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const PasswordRecoveryScreen(),
+      );
+    case passwordResetScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const PasswordResetScreen(),
       );
     // case verificationMethodScreenRoute:
     //   return MaterialPageRoute(

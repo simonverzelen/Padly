@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/models/category_model.dart';
-import 'package:shop/screens/search/views/components/search_form.dart';
+import 'package:padly/constants.dart';
+import 'package:padly/models/category_model.dart';
+import 'package:padly/screens/search/views/components/search_form.dart';
 
 import 'components/expansion_category.dart';
 

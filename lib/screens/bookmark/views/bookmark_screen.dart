@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shop/components/product/product_card.dart';
-import 'package:shop/models/product_model.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:padly/components/product/product_card.dart';
+import 'package:padly/models/product_model.dart';
+import 'package:padly/route/route_constants.dart';
 
 import '../../../constants.dart';
 

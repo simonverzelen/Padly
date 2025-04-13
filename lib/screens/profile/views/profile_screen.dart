@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:shop/components/list_tile/divider_list_tile.dart';
-import 'package:shop/components/network_image_with_loader.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/screen_export.dart';
+import 'package:padly/components/list_tile/divider_list_tile.dart';
+import 'package:padly/components/network_image_with_loader.dart';
+import 'package:padly/constants.dart';
+import 'package:padly/route/screen_export.dart';
+import 'package:padly/screens/auth/domain/auth_service.dart';
 
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
@@ -13,6 +14,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthService authService = AuthService();
     return Scaffold(
       body: ListView(
         children: [
@@ -156,7 +158,9 @@ class ProfileScreen extends StatelessWidget {
 
           // Log Out
           ListTile(
-            onTap: () {},
+            onTap: () {
+              authService.signout(context: context);
+            },
             minLeadingWidth: 24,
             leading: SvgPicture.asset(
               "assets/icons/Logout.svg",
