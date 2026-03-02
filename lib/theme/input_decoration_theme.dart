@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 
 import '../constants.dart';
 
@@ -12,10 +13,10 @@ const InputDecorationTheme lightInputDecorationTheme = InputDecorationTheme(
   errorBorder: errorOutlineInputBorder,
 );
 
-const InputDecorationTheme darkInputDecorationTheme = InputDecorationTheme(
-  fillColor: darkGreyColor,
+InputDecorationTheme darkInputDecorationTheme = InputDecorationTheme(
+  fillColor: cardBackgroundColor,
   filled: true,
-  hintStyle: TextStyle(color: whileColor40),
+  hintStyle: const TextStyle(color: whiteColor60),
   border: outlineInputBorder,
   enabledBorder: outlineInputBorder,
   focusedBorder: focusedOutlineInputBorder,

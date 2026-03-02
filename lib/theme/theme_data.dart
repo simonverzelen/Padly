@@ -14,7 +14,7 @@ const AppBarTheme appBarLightTheme = AppBarTheme(
 );
 
 const AppBarTheme appBarDarkTheme = AppBarTheme(
-  backgroundColor: blackColor,
+  backgroundColor: Colors.transparent,
   elevation: 0,
   iconTheme: IconThemeData(color: Colors.white),
   titleTextStyle: TextStyle(

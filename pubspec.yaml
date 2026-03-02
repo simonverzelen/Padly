@@ -34,6 +34,25 @@ dependencies:
   http: ^1.3.0
   mime: ^2.0.0
   path_provider: ^2.1.5
+  firebase_messaging: ^15.2.5
+  firebase_app_check: ^0.3.0+1
+  flutter_local_notifications: ^19.1.0
+  cloud_firestore: ^5.6.6
+  googleapis_auth: ^1.6.0
+  permission_handler: ^12.0.0+1
+  shared_preferences: ^2.5.3
+  cloud_functions: ^5.4.0
+  intl: ^0.20.2
+  lottie: ^3.3.1
+  provider: ^6.1.4
+  avatar_stack: ^3.0.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  async: ^2.12.0
+  uuid: ^4.5.2
+  fuzzywuzzy: ^1.2.0
+  flutter_dotenv: ^6.0.0
+  glassmorphism: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -45,12 +64,14 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
     - assets/images/
     - assets/icons/
     - assets/Illustration/
     - assets/flags/
     - assets/logo/
     - assets/screens/
+    - assets/lottie/success.json
 
   fonts:
     - family: Plus Jakarta

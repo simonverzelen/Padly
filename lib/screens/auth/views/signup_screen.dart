@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:padly/screens/auth/views/components/sign_up_form.dart';
 import 'package:padly/route/route_constants.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../constants.dart';
 import '../domain/auth_service.dart';
@@ -54,6 +55,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Row(
                     children: [
                       Checkbox(
+                        activeColor: primaryColor,
+                        checkColor: backgroundColor,
                         onChanged: (value) {
                           setState(() {
                             checked = value!;
@@ -89,12 +92,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: defaultPadding * 2),
                   ElevatedButton(
-                    onPressed: () {
-                      authService.signup(
+                    onPressed: () async {
+                      await authService.signup(
                         email: emailController.text,
                         password: passwordController.text,
                         context: context,
                       );
+
+                      showAccountCreatedBottomSheet(context);
                     },
                     child: const Text("Continue"),
                   ),
@@ -118,4 +123,59 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
+}
+
+void showAccountCreatedBottomSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isDismissible: false,
+    enableDrag: false,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(defaultPadding),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Lottie.asset(
+              "assets/lottie/success.json",
+              height: 200,
+              repeat: false,
+            ),
+            Text(
+              'Whoohooo!',
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              'Account successfully created!',
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: defaultPadding),
+            Text(
+              'Please check your mailbox to activate your account.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Colors.grey.shade500),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: defaultPadding * 4),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, logInScreenRoute);
+              },
+              child: const Text('Log in'),
+            )
+          ],
+        ),
+      );
+    },
+  );
 }

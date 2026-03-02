@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
+import 'package:padly/components/bottom_navigation.dart';
 
 import 'chat_page.dart';
 import '../utils.dart';
@@ -12,6 +13,14 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Chat',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+      ),
       body: SafeArea(
         child: StreamBuilder<List<types.Room>>(
           stream: FirebaseChatCore.instance.rooms(),
@@ -36,8 +45,18 @@ class ChatScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => ChatPage(
-                          room: room,
+                        builder: (context) => Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Image.asset(
+                                'assets/images/background.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            ChatPage(
+                              room: room,
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -60,6 +79,7 @@ class ChatScreen extends StatelessWidget {
           },
         ),
       ),
+      bottomNavigationBar: const BottomNavigation(index: 1),
     );
   }
 }

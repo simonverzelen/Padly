@@ -17,13 +17,11 @@ class AuthService {
       final user = FirebaseAuth.instance.currentUser!;
       await user.sendEmailVerification();
 
-      /*final supabase = Supabase.instance.client;
-      await supabase.auth.signUp(
-        email: email,
-        password: password,
-      );*/
-
-      Navigator.pushNamed(context, logInScreenRoute);
+      await FirebaseChatCore.instance.createUserInFirestore(
+        types.User(
+          id: user.uid,
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       String message = '';
       if (e.code == 'weak-password') {
@@ -57,14 +55,7 @@ class AuthService {
 
       final user = FirebaseAuth.instance.currentUser!;
 
-      await FirebaseChatCore.instance.createUserInFirestore(
-        types.User(
-          firstName: user.displayName ?? user.email,
-          id: user.uid,
-        ),
-      );
-
-      if (user.emailVerified == false) {
+      if (!user.emailVerified) {
         Fluttertoast.showToast(
           msg: "Please check your mailbox",
           toastLength: Toast.LENGTH_LONG,
@@ -76,11 +67,20 @@ class AuthService {
         return;
       }
 
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        entryPointScreenRoute,
-        (route) => false,
-      );
+      if (user.displayName != null) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          entryPointScreenRoute,
+          (route) => false,
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          userInfoScreenRoute,
+          (route) => false,
+          arguments: false,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message = e.message ?? "Something went wrong";
       Fluttertoast.showToast(
@@ -94,6 +94,11 @@ class AuthService {
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<bool> isLoggedIn() async {
+    final user = FirebaseAuth.instance.currentUser;
+    return user != null;
   }
 
   Future<void> resetPassword({required String email}) async {
@@ -114,5 +119,10 @@ class AuthService {
       context,
       onbordingScreenRoute,
     );
+  }
+
+  User? getCurrentUser() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user;
   }
 }

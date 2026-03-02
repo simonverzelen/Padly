@@ -7,27 +7,27 @@ import 'checkbox_themedata.dart';
 import 'theme_data.dart';
 
 class AppTheme {
-  static ThemeData lightTheme(BuildContext context) {
+  static ThemeData darkTheme(BuildContext context) {
     return ThemeData(
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       fontFamily: "Plus Jakarta",
       primarySwatch: primaryMaterialColor,
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: Colors.white,
-      iconTheme: const IconThemeData(color: blackColor),
+      scaffoldBackgroundColor: Colors.transparent,
+      iconTheme: const IconThemeData(color: whiteColor),
       textTheme: const TextTheme(
-        bodyMedium: TextStyle(color: blackColor40),
+        bodyMedium: TextStyle(color: whiteColor),
       ),
       elevatedButtonTheme: elevatedButtonThemeData,
       textButtonTheme: textButtonThemeData,
       outlinedButtonTheme: outlinedButtonTheme(),
-      inputDecorationTheme: lightInputDecorationTheme,
+      inputDecorationTheme: darkInputDecorationTheme,
       checkboxTheme: checkboxThemeData.copyWith(
-        side: const BorderSide(color: blackColor40),
+        side: const BorderSide(color: Colors.white),
       ),
-      appBarTheme: appBarLightTheme,
+      appBarTheme: appBarDarkTheme,
       scrollbarTheme: scrollbarThemeData,
-      dataTableTheme: dataTableLightThemeData,
+      dataTableTheme: dataTableDarkThemeData,
     );
   }
 

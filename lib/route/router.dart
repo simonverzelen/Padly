@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:padly/entry_point.dart';
+import 'package:padly/screens/games/games.dart';
+import 'package:padly/screens/players/players.dart';
+import 'package:padly/screens/user_info/src/domain/padly_user.dart';
+import 'package:padly/screens/user_info/src/domain/user_service.dart';
 
 import '../screens/auth/views/password_recovery.dart';
+import '../screens/games/src/view/overview/add_players_overview.dart';
+import '../screens/games/src/view/overview/requests_overview.dart';
+import '../screens/games/src/view/detail/search_club_screen.dart';
 import 'screen_export.dart';
 
 // Yuo will get 50+ screens and more once you have the full template
@@ -67,19 +74,63 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case onbordingScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const OnBordingScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const OnBordingScreen(),
+          ],
+        ),
       );
     // case preferredLanuageScreenRoute:
     //   return MaterialPageRoute(
     //     builder: (context) => const PreferredLanguageScreen(),
     //   );
+    case notificationPermissionScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const NotificationsScreen(),
+          ],
+        ),
+      );
     case logInScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const LoginScreen(),
+          ],
+        ),
       );
     case signUpScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const SignUpScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SignUpScreen(),
+          ],
+        ),
       );
     // case profileSetupScreenRoute:
     //   return MaterialPageRoute(
@@ -87,11 +138,31 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   );
     case passwordRecoveryScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const PasswordRecoveryScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const PasswordRecoveryScreen(),
+          ],
+        ),
       );
     case passwordResetScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const PasswordResetScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const PasswordResetScreen(),
+          ],
+        ),
       );
     // case verificationMethodScreenRoute:
     //   return MaterialPageRoute(
@@ -150,7 +221,31 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   );
     case homeScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const HomeScreen(),
+          ],
+        ),
+      );
+    case chatScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const ChatScreen(),
+          ],
+        ),
       );
     // case brandScreenRoute:
     //   return MaterialPageRoute(
@@ -190,11 +285,117 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case entryPointScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const EntryPoint(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const EntryPoint(),
+          ],
+        ),
       );
     case profileScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const ProfileScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const ProfileScreen(),
+          ],
+        ),
+      );
+    case createGameScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const CreateMatchScreen(),
+          ],
+        ),
+      );
+    case searchClubScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SearchClubScreen(),
+          ],
+        ),
+      );
+    case addPlayersScreenRoute:
+      final args = settings.arguments as Map<String, dynamic>? ?? {};
+      final int maxPlayers = args['maxPlayers'] as int? ?? 0;
+      final List<PadlyUser> initialPlayers =
+          args['initialPlayers'] as List<PadlyUser>? ?? [];
+
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            AddPlayersOverview(
+              maxPlayers: maxPlayers,
+              initialPlayers: initialPlayers,
+              userService: UserService(),
+            ),
+          ],
+        ),
+      );
+    case gameDetailScreenRoute:
+      final args = settings.arguments as Map<String, dynamic>? ?? {};
+      final Game game = args['game'] as Game? ?? Game(currentPlayers: []);
+
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            GameDetailScreen(
+              game: game,
+            ),
+          ],
+        ),
+      );
+    case gameRequestsScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            RequestsOverview(
+              requests: settings.arguments as List<PadlyUser>? ?? [],
+            ),
+          ],
+        ),
       );
     // case getHelpScreenRoute:
     //   return MaterialPageRoute(
@@ -205,8 +406,35 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //     builder: (context) => const ChatScreen(),
     //   );
     case userInfoScreenRoute:
+      final bool isEditable = settings.arguments as bool? ?? false;
       return MaterialPageRoute(
-        builder: (context) => const UserInfoScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            UserInfoScreen(
+              isEditable: isEditable,
+            ),
+          ],
+        ),
+      );
+    case playerDetailScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const PlayerDetailScreen(),
+          ],
+        ),
       );
     // case currentPasswordScreenRoute:
     //   return MaterialPageRoute(
@@ -232,10 +460,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const NotificationOptionsScreen(),
       );
-    // case selectLanguageScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SelectLanguageScreen(),
-    //   );
+    case selectLanguageScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            SelectLanguageScreen(),
+          ],
+        ),
+      );
     // case noAddressScreenRoute:
     //   return MaterialPageRoute(
     //     builder: (context) => const NoAddressScreen(),
@@ -307,7 +545,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     default:
       return MaterialPageRoute(
         // Make a screen for undefine
-        builder: (context) => const OnBordingScreen(),
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const OnBordingScreen(),
+          ],
+        ),
       );
   }
 }

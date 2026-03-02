@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "padly": "padly-auth-001-5917c",
+    "padly-functions": "padly-auth-001-5917c",
+    "default": "padly-auth-001-5917c"
+  },
+  "targets": {},
+  "etags": {}
+}

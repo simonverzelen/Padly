@@ -43,7 +43,7 @@ class SignUpForm extends StatelessWidget {
                         .textTheme
                         .bodyLarge!
                         .color!
-                        .withOpacity(0.3),
+                        .withOpacity(0.5),
                     BlendMode.srcIn,
                   ),
                 ),
@@ -72,7 +72,7 @@ class SignUpForm extends StatelessWidget {
                         .textTheme
                         .bodyLarge!
                         .color!
-                        .withOpacity(0.3),
+                        .withOpacity(0.5),
                     BlendMode.srcIn,
                   ),
                 ),
