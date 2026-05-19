@@ -75,7 +75,7 @@ class UserGateway {
     final userDoc = await _firestore.collection('users').doc(userId).get();
     if (userDoc.exists) {
       final data = userDoc.data() as Map<String, dynamic>;
-      final PadlyUser user = PadlyUser.fromJson(data);
+      final PadlyUser user = PadlyUser.fromJson({'id': userDoc.id, ...data});
       return user;
     }
     return null;

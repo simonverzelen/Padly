@@ -230,6 +230,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           : 4;
       final List<PadlyUser> initialPlayers =
           args['initialPlayers'] as List<PadlyUser>? ?? [];
+      final String? lockedPlayerId = args['lockedPlayerId'] as String?;
 
       return MaterialPageRoute(
         builder: (context) => Stack(
@@ -244,6 +245,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               maxPlayers: maxPlayers,
               initialPlayers: initialPlayers,
               userService: UserService(),
+              lockedPlayerId: lockedPlayerId,
             ),
           ],
         ),

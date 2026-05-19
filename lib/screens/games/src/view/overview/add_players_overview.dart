@@ -11,11 +11,13 @@ class AddPlayersOverview extends StatelessWidget {
   final int maxPlayers;
   final List<PadlyUser> initialPlayers;
   final UserService userService;
+  final String? lockedPlayerId;
 
   const AddPlayersOverview({
     required this.maxPlayers,
     required this.initialPlayers,
     required this.userService,
+    this.lockedPlayerId,
     super.key,
   });
 
@@ -26,6 +28,7 @@ class AddPlayersOverview extends StatelessWidget {
         maxPlayers: maxPlayers,
         initialPlayers: initialPlayers,
         userService: userService,
+        lockedPlayerId: lockedPlayerId,
       ),
       child: const _AddPlayersBody(),
     );
@@ -40,15 +43,22 @@ class _AddPlayersBody extends StatefulWidget {
 }
 
 class _AddPlayersBodyState extends State<_AddPlayersBody> {
+  AddPlayersViewModel? _vm;
+  final _searchController = TextEditingController();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<AddPlayersViewModel>().addListener(_onVmChanged);
+    if (_vm == null) {
+      _vm = context.read<AddPlayersViewModel>();
+      _vm!.addListener(_onVmChanged);
+    }
   }
 
   void _onVmChanged() {
-    final vm = context.read<AddPlayersViewModel>();
-    if (vm.feedbackMessage != null && mounted) {
+    final vm = _vm;
+    if (vm == null || !mounted) return;
+    if (vm.feedbackMessage != null) {
       final message = vm.feedbackMessage!;
       vm.clearFeedbackMessage();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -62,7 +72,9 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
 
   @override
   void dispose() {
-    context.read<AddPlayersViewModel>().removeListener(_onVmChanged);
+    _vm?.removeListener(_onVmChanged);
+    _vm = null;
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -78,7 +90,6 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
       ),
       body: CustomScrollView(
         slivers: [
-          /// 🔍 Search field + label
           SliverToBoxAdapter(
             child: Padding(
               padding:
@@ -88,6 +99,7 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
                 children: [
                   TextInputField(
                     label: "Zoek speler",
+                    controller: _searchController,
                     onChanged: vm.setSearch,
                   ),
                 ],
@@ -95,7 +107,6 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
             ),
           ),
 
-          /// ✅ Selected players
           if (vm.selectedPlayers.isNotEmpty && !vm.isSearching) ...[
             const SliverToBoxAdapter(
               child: Padding(
@@ -111,18 +122,19 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final user = vm.selectedPlayers[index];
+                  final isLocked = user.id == vm.lockedPlayerId;
                   return RequestCard(
                     user: user,
                     isSelected: true,
-                    onTap: () => vm.togglePlayer(user),
+                    isLocked: isLocked,
+                    onTap: isLocked ? null : () => vm.togglePlayer(user),
                   );
                 },
                 childCount: vm.selectedPlayers.length,
               ),
             ),
           ],
-          
-          /// 📋 Results list
+
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -142,190 +154,82 @@ class _AddPlayersBodyState extends State<_AddPlayersBody> {
             ),
           ),
 
-          /// Bottom padding
+          if (vm.isSearching && !vm.isLoading)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: defaultPadding / 2,
+                  vertical: defaultPadding / 2,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (vm.searchResults.isEmpty) ...[
+                      const Text(
+                        'Speler niet gevonden',
+                        style: TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: defaultPadding / 2),
+                    ],
+                    OutlinedButton(
+                      onPressed: () {
+                        _searchController.clear();
+                        vm.addGuestPlayer();
+                      },
+                      child: const Text('Voeg gastspeler toe'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           const SliverToBoxAdapter(
             child: SizedBox(height: defaultPadding),
           ),
         ],
       ),
-    );
-  }
-}
-/*class AddPlayersOverview extends StatelessWidget {
-  final int maxPlayers;
-  final List<PadlyUser> initialPlayers;
-  final UserService userService;
-
-  AddPlayersOverview({
-    required this.maxPlayers,
-    required this.initialPlayers,
-    required this.userService,
-    super.key,
-  });
-
-  final requests = [
-    PadlyUser(
-      firstName: "Simon",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Charlotte",
-      rank: 'P300',
-      imageUrl: 'https://i.pravatar.cc/300?v=2',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-      imageUrl: 'https://i.pravatar.cc/300?v=3',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-    PadlyUser(
-      firstName: "Josephine",
-      rank: 'P300',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final vm = context.watch<AddPlayersViewModel>();
-
-    return ChangeNotifierProvider(
-      create: (_) => AddPlayersViewModel(
-        maxPlayers: maxPlayers,
-        initialPlayers: initialPlayers,
-        userService: context.read<UserService>(),
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Voeg Speler Toe',
-            style: Theme.of(context).textTheme.titleMedium,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: defaultPadding,
+            horizontal: defaultPadding / 2,
           ),
-          centerTitle: true,
-          forceMaterialTransparency: true,
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextInputField(
-                    label: "Zoek speler",
-                    onChanged: (value) {
-                      context.read<AddPlayersViewModel>().setSearch(value);
-                    },
-                  ),
-                  const SizedBox(height: defaultPadding),
-                  const Text(
-                    'Suggesties:',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32)),
               ),
+              onPressed: vm.hasChanges
+                  ? () => Navigator.pop(context, vm.selectedPlayers)
+                  : null,
+              child: const Text('Bevestig'),
             ),
-            const SizedBox(height: defaultPadding / 2),
-            if (vm.selectedPlayers.isNotEmpty) ...[
-              const SizedBox(height: defaultPadding),
-              const Text('Toegevoegd',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...vm.selectedPlayers.map(
-                (user) => RequestCard(
-                  user: user,
-                  isSelected: true,
-                  onTap: () => vm.togglePlayer(user),
-                ),
-              ),
-            ],
-            if (!vm.isSearching && vm.recentPlayers.isNotEmpty) ...[
-              const SizedBox(height: defaultPadding),
-              const Text('Recent',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...vm.recentPlayers.map(
-                (user) => RequestCard(
-                  user: user,
-                  isSelected: vm.isSelected(user),
-                  onTap: () => vm.togglePlayer(user),
-                ),
-              ),
-            ],
-            if (vm.isSearching && vm.searchResults.isNotEmpty) ...[
-              Expanded(
-                child: Container(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverSafeArea(
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return RequestCard(
-                                user: requests[index],
-                                isSelected: Random().nextBool(),
-                              );
-                            },
-                            childCount: requests.length,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: defaultPadding / 2),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-*/
+
 class RequestCard extends StatelessWidget {
   final PadlyUser user;
   final bool isSelected;
+  final bool isLocked;
   final VoidCallback? onTap;
-  const RequestCard(
-      {required this.user, required this.isSelected, this.onTap, super.key});
+
+  const RequestCard({
+    required this.user,
+    required this.isSelected,
+    this.isLocked = false,
+    this.onTap,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -385,56 +289,46 @@ class RequestCard extends StatelessWidget {
                 ].join(' '),
                 style: Theme.of(context).textTheme.titleSmall,
               ),
-              /*subtitle: Row(
-                children: [
-                  Text(
-                    'padel',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                  Transform(
-                    transform: Matrix4.identity()..scale(0.75)
-                    ..translate(18.0, 10.0),
-                    child: Chip(
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 5),
-                      backgroundColor: whiteColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: const BorderSide(color: Colors.transparent),
+              trailing: isLocked
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: whiteColor,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      label: Text(
-                        user.rank ?? '',
-                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                              color: backgroundColor,
-                              fontWeight: FontWeight.w700,
-                            ),
+                      child: const Text(
+                        'Jij',
+                        style: TextStyle(
+                          color: backgroundColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        color: isSelected ? primaryColor : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected ? primaryColor : whiteColor60,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Transform.scale(
+                        scale: 0.7,
+                        child: isSelected
+                            ? SvgPicture.asset(
+                                "assets/icons/Singlecheck.svg",
+                                colorFilter: const ColorFilter.mode(
+                                  backgroundColor,
+                                  BlendMode.srcIn,
+                                ),
+                              )
+                            : null,
                       ),
                     ),
-                  ),
-                ],
-              ),*/
-              trailing: Container(
-                height: 30,
-                width: 30,
-                decoration: BoxDecoration(
-                  color: isSelected ? primaryColor : Colors.transparent,
-                  border: Border.all(
-                    color: isSelected ? primaryColor : whiteColor60,
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Transform.scale(
-                  scale: 0.7,
-                  child: isSelected
-                      ? SvgPicture.asset(
-                          "assets/icons/Singlecheck.svg",
-                          colorFilter: const ColorFilter.mode(
-                            backgroundColor,
-                            BlendMode.srcIn,
-                          ),
-                        )
-                      : null,
-                ),
-              ),
             ),
           ],
         ),
@@ -460,22 +354,24 @@ class UserRequest {
 class TextInputField extends StatelessWidget {
   final String label;
   final dynamic value;
+  final TextEditingController? controller;
   final ValueChanged<String> onChanged;
 
   const TextInputField({
     required this.label,
     this.value,
+    this.controller,
     required this.onChanged,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value?.toString() ?? "",
+      controller: controller,
+      initialValue: controller == null ? (value?.toString() ?? "") : null,
       validator: (value) => value!.isEmpty ? "Please fill in" : null,
-      onChanged: (value) {
-        onChanged(value);
-      },
+      onChanged: onChanged,
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
         hintText: label,

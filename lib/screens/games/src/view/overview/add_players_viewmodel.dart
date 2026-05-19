@@ -2,32 +2,45 @@ import 'package:flutter/material.dart';
 
 import '../../../../user_info/src/domain/padly_user.dart';
 import '../../../../user_info/src/domain/user_service.dart';
+import '../../data/recent_players_cache.dart';
 
 class AddPlayersViewModel extends ChangeNotifier {
   AddPlayersViewModel({
     required this.maxPlayers,
     required List<PadlyUser> initialPlayers,
     required this.userService,
-  }) : selectedPlayers = [...initialPlayers];
+    this.lockedPlayerId,
+    RecentPlayersCache? cache,
+  })  : selectedPlayers = [...initialPlayers],
+        _initialIds = initialPlayers.map((p) => p.id).toSet(),
+        _cache = cache ?? RecentPlayersCache() {
+    _loadRecentPlayers();
+  }
 
   final int maxPlayers;
   final UserService userService;
+  final String? lockedPlayerId;
+  final RecentPlayersCache _cache;
+  final Set<String?> _initialIds;
 
   final List<PadlyUser> selectedPlayers;
-  final List<PadlyUser> recentPlayers = [];
+  List<PadlyUser> _cachedRecent = [];
+
+  bool get hasChanges {
+    final currentIds = selectedPlayers.map((p) => p.id).toSet();
+    return !currentIds.containsAll(_initialIds) ||
+        !_initialIds.containsAll(currentIds);
+  }
+
+  List<PadlyUser> get recentPlayers => _cachedRecent
+      .where((p) => !isSelected(p) && p.id != lockedPlayerId)
+      .toList();
 
   List<PadlyUser> searchResults = [];
   String searchQuery = '';
   bool isLoading = false;
   String? errorMessage;
-
-  /// Set by [togglePlayer] when [canAddMore] is false.
-  /// The view should read this and show a SnackBar, then clear it.
   String? feedbackMessage;
-
-  // --------------------
-  // Derived state
-  // --------------------
 
   bool get isSearching => searchQuery.isNotEmpty;
 
@@ -36,9 +49,15 @@ class AddPlayersViewModel extends ChangeNotifier {
 
   bool get canAddMore => selectedPlayers.length < maxPlayers;
 
-  // --------------------
-  // Actions
-  // --------------------
+  Future<void> _loadRecentPlayers() async {
+    try {
+      _cachedRecent = await _cache.load();
+    } catch (_) {
+      await _cache.clear();
+      _cachedRecent = [];
+    }
+    notifyListeners();
+  }
 
   Future<void> setSearch(String value) async {
     searchQuery = value.trim();
@@ -65,6 +84,8 @@ class AddPlayersViewModel extends ChangeNotifier {
   }
 
   void togglePlayer(PadlyUser user) {
+    if (lockedPlayerId != null && user.id == lockedPlayerId) return;
+
     final index = selectedPlayers.indexWhere((p) => p.id == user.id);
 
     if (index >= 0) {
@@ -76,23 +97,39 @@ class AddPlayersViewModel extends ChangeNotifier {
         return;
       }
       selectedPlayers.add(user);
-      _addToRecent(user);
+      _persistToRecent(user);
     }
 
     notifyListeners();
   }
 
-  /// Called by the view after it has displayed [feedbackMessage].
+  void addGuestPlayer() {
+    if (!canAddMore) {
+      feedbackMessage = 'Maximum aantal spelers bereikt ($maxPlayers)';
+      notifyListeners();
+      return;
+    }
+    final guest = PadlyUser(
+      id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
+      firstName: 'Gast',
+    );
+    selectedPlayers.add(guest);
+    searchQuery = '';
+    searchResults = [];
+    notifyListeners();
+  }
+
   void clearFeedbackMessage() {
     feedbackMessage = null;
   }
 
-  void _addToRecent(PadlyUser user) {
-    recentPlayers.removeWhere((p) => p.id == user.id);
-    recentPlayers.insert(0, user);
+  void _persistToRecent(PadlyUser user) {
+    // Don't cache guests or users without an id.
+    if (user.id == null || (user.id!.startsWith('guest_'))) return;
 
-    if (recentPlayers.length > 6) {
-      recentPlayers.removeLast();
-    }
+    _cachedRecent.removeWhere((p) => p.id == user.id);
+    _cachedRecent.insert(0, user);
+
+    _cache.save(_cachedRecent);
   }
 }

@@ -4,12 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:padly/route/route_constants.dart';
 import 'package:padly/route/router.dart' as router;
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
 import 'package:padly/screens/user_info/src/domain/user_service.dart';
 import 'package:padly/theme/app_theme.dart';
+import 'package:padly/utils/seed_mock_users.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/env.dart';
@@ -46,6 +48,10 @@ Future<void> main() async {
   );
 
   FirebaseAuth.instance.setLanguageCode('nl');
+
+  if (kDebugMode) {
+    await seedMockUsers();
+  }
 
   /*final _firebaseMessaging = FirebaseMessaging.instance;
 

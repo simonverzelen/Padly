@@ -16,6 +16,7 @@ class GamesOverview extends StatelessWidget {
       builder: (context, child) {
         final viewModel = context.watch<GamesOverviewViewmodel>();
         final games = viewModel.games;
+        final myGames = viewModel.myGames;
 
         Widget body;
 
@@ -59,6 +60,20 @@ class GamesOverview extends StatelessWidget {
                 const SliverToBoxAdapter(
                   child: Filters(),
                 ),
+                if (myGames.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(defaultPadding / 2),
+                      child: Text(
+                        "Mijn Matches",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: RecommendedGames(games: myGames),
+                  ),
+                ],
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(defaultPadding / 2),

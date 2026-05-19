@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:padly/components/category_button.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/route/route_constants.dart';
+import 'package:padly/screens/user_info/src/domain/padly_user.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/club.dart';
@@ -28,15 +29,20 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
   }
 
   void _onVmChanged() {
-    if (_vm.error != null && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_vm.error!)),
-          );
-        }
-      });
-    }
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_vm.isSuccess) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          entryPointScreenRoute,
+          (_) => false,
+        );
+      } else if (_vm.error != null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(_vm.error!)));
+      }
+    });
   }
 
   @override
@@ -805,7 +811,7 @@ class _CurrentPlayersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CreateGameViewModel>();
-    final game = vm.game;
+    final players = vm.currentPlayers;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -818,26 +824,32 @@ class _CurrentPlayersList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(defaultPadding / 8),
                 decoration: BoxDecoration(
-                  color: i < (game.currentPlayers ?? []).length
-                      ? whiteColor
-                      : null, // Border color
+                  color: i < players.length ? whiteColor : null,
                   shape: BoxShape.circle,
                 ),
                 child: InkWell(
-                  onTap: () => Navigator.pushNamed(
-                      context, addPlayersScreenRoute,
+                  onTap: () async {
+                    final result = await Navigator.pushNamed(
+                      context,
+                      addPlayersScreenRoute,
                       arguments: {
                         'maxPlayers': vm.playersAmount,
-                        'initialPlayers': vm.game.currentPlayers ?? [],
-                      }),
+                        'initialPlayers': players,
+                        'lockedPlayerId': vm.lockedPlayerId,
+                      },
+                    );
+                    if (result is List<PadlyUser>) {
+                      vm.setPlayers(result);
+                    }
+                  },
                   child: CircleAvatar(
                     radius: 36,
                     backgroundColor: pillBackgroundColor,
-                    backgroundImage: i < (game.currentPlayers ?? []).length &&
-                            (game.currentPlayers ?? [])[i].imageUrl != null
-                        ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
+                    backgroundImage: i < players.length &&
+                            players[i].imageUrl != null
+                        ? NetworkImage(players[i].imageUrl!)
                         : null,
-                    child: i >= (game.currentPlayers ?? []).length
+                    child: i >= players.length
                         ? SvgPicture.asset(
                             "assets/icons/Plus1.svg",
                             height: defaultPadding * 1.5,
@@ -848,9 +860,9 @@ class _CurrentPlayersList extends StatelessWidget {
                   ),
                 ),
               ),
-              if (i < (game.currentPlayers ?? []).length) ...[
+              if (i < players.length) ...[
                 const SizedBox(height: defaultPadding / 4),
-                Text((game.currentPlayers ?? [])[i].firstName ?? '',
+                Text(players[i].firstName ?? '',
                     style: Theme.of(context).textTheme.bodySmall!.copyWith(
                           fontWeight: FontWeight.w600,
                           color: whiteColor,
@@ -867,7 +879,7 @@ class _CurrentPlayersList extends StatelessWidget {
                       side: const BorderSide(color: Colors.transparent),
                     ),
                     label: Text(
-                      (game.currentPlayers ?? [])[i].rank ?? '',
+                      players[i].rank ?? '',
                       style: Theme.of(context).textTheme.labelSmall!.copyWith(
                             color: backgroundColor,
                             fontWeight: FontWeight.w700,

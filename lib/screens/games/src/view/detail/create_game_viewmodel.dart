@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
+import 'package:padly/screens/user_info/src/domain/user_service.dart';
 
 import '../../domain/club.dart';
 import '../../domain/create_game.dart';
-import '../../domain/game.dart';
 import '../../domain/games_services.dart';
 
 class CreateGameViewModel extends ChangeNotifier {
   CreateGameViewModel({
     required GamesServices gameService,
-  }) : _gameService = gameService;
+  }) : _gameService = gameService {
+    _loadCurrentUser();
+  }
 
   final GamesServices _gameService;
 
-  final Game game = Game(currentPlayers: [
-    PadlyUser(
-      firstName: "Simon",
-      rank: 'P300',
-      imageUrl: 'https://i.pravatar.cc/300?v=1',
-    ),
-    PadlyUser(
-      firstName: "Charlotte",
-      rank: 'P300',
-      imageUrl: 'https://i.pravatar.cc/300?v=2',
-    ),
-  ]);
+  List<PadlyUser> _currentPlayers = [];
+  List<PadlyUser> get currentPlayers => _currentPlayers;
+
+  String? get lockedPlayerId =>
+      _currentPlayers.isNotEmpty ? _currentPlayers.first.id : null;
+
+  Future<void> _loadCurrentUser() async {
+    final user = await UserService().getUser();
+    if (user != null) {
+      _currentPlayers = [user];
+      notifyListeners();
+    }
+  }
+
+  void setPlayers(List<PadlyUser> players) {
+    _currentPlayers = players;
+    notifyListeners();
+  }
 
   bool _canCreateGame = false;
   bool get canCreateGame => _canCreateGame;
@@ -168,6 +176,9 @@ class CreateGameViewModel extends ChangeNotifier {
   bool _isSaving = false;
   bool get isSaving => _isSaving;
 
+  bool _isSuccess = false;
+  bool get isSuccess => _isSuccess;
+
   String? _error;
   String? get error => _error;
 
@@ -205,14 +216,12 @@ class CreateGameViewModel extends ChangeNotifier {
         pricePerHour: _price!,
         rankingMin: _rankFromLevel(levelList[_minLevelIndex]),
         rankingMax: _rankFromLevel(levelList[_maxLevelIndex]),
-        currentPlayers: game.currentPlayers?.map((u) => u.toJson()).toList(),
-        hostPlayer: game.currentPlayers?.first.toJson(),
+        currentPlayers: _currentPlayers.map((u) => u.toJson()).toList(),
+        hostPlayer: _currentPlayers.isNotEmpty ? _currentPlayers.first.toJson() : null,
       );
 
-      final insertedRow = await _gameService.createGame(gameCreate);
-
-      // optional: store created row / navigate
-      debugPrint('Created game: $insertedRow');
+      await _gameService.createGame(gameCreate);
+      _isSuccess = true;
     } catch (e) {
       _error = e.toString();
       print(_error);
