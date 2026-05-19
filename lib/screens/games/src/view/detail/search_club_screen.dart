@@ -14,7 +14,7 @@ class SearchClubScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => SearchClubViewModel(
-        GooglePlacesRepository("AIzaSyCJ34vfZ5vj0QK0usAslRY-LFlHF_IlmmI"),
+        GooglePlacesRepository(),
         RecentClubsCache(),
       ),
       child: const _ZoekClubView(),
@@ -52,8 +52,16 @@ class _ZoekClubView extends StatelessWidget {
               _RecentClubsSection(
                 clubs: vm.recentClubs,
                 onTap: (club) async {
-                  await vm.setToFirstRecent(club);
-                  Navigator.pop(context, club);
+                  try {
+                    await vm.setToFirstRecent(club);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Fout bij opslaan: $e')),
+                      );
+                    }
+                  }
+                  if (context.mounted) Navigator.pop(context, club);
                 },
               ),
             if (vm.isSearching) ...[
@@ -70,6 +78,31 @@ class _ZoekClubView extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              if (vm.errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Center(
+                    child: Text(
+                      vm.errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              else if (vm.results.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: Center(
+                    child: SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryColor,
+                      ),
                     ),
                   ),
                 ),

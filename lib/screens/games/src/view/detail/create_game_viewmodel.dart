@@ -201,7 +201,7 @@ class CreateGameViewModel extends ChangeNotifier {
         lng: _location!.lng,
         club: _location!.name,
         location: _location!.city,
-        maxPlayers: playersAmount == 0 ? 2 : 4,
+        maxPlayers: int.parse(_playersAmountList[_playersAmountIndex ?? 1]),
         pricePerHour: _price!,
         rankingMin: _rankFromLevel(levelList[_minLevelIndex]),
         rankingMax: _rankFromLevel(levelList[_maxLevelIndex]),

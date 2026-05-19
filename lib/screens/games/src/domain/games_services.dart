@@ -12,11 +12,19 @@ class GamesServices {
   );
 
   Future<List<Game>> fetchGames() async {
-    final games = await _gamesGateway.fethSupabaseGames();
-    return games ?? [];
+    try {
+      final games = await _gamesGateway.fethSupabaseGames();
+      return games ?? [];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> createGame(GameCreate game) async {
-    return await _gamesGateway.createGame(game);
+    try {
+      return await _gamesGateway.createGame(game);
+    } catch (e) {
+      rethrow;
+    }
   }
 }

@@ -11,64 +11,6 @@ import '../screens/games/src/view/overview/requests_overview.dart';
 import '../screens/games/src/view/detail/search_club_screen.dart';
 import 'screen_export.dart';
 
-// Yuo will get 50+ screens and more once you have the full template
-// 🔗 Full template: https://theflutterway.gumroad.com/l/fluttershop
-
-// NotificationPermissionScreen()
-// PreferredLanguageScreen()
-// SelectLanguageScreen()
-// SignUpVerificationScreen()
-// ProfileSetupScreen()
-// VerificationMethodScreen()
-// OtpScreen()
-// SetNewPasswordScreen()
-// DoneResetPasswordScreen()
-// TermsOfServicesScreen()
-// SetupFingerprintScreen()
-// SetupFingerprintScreen()
-// SetupFingerprintScreen()
-// SetupFingerprintScreen()
-// SetupFaceIdScreen()
-// OnSaleScreen()
-// BannerLStyle2()
-// BannerLStyle3()
-// BannerLStyle4()
-// SearchScreen()
-// SearchHistoryScreen()
-// NotificationsScreen()
-// EnableNotificationScreen()
-// NoNotificationScreen()
-// NotificationOptionsScreen()
-// ProductInfoScreen()
-// ShippingMethodsScreen()
-// ProductReviewsScreen()
-// SizeGuideScreen()
-// BrandScreen()
-// CartScreen()
-// EmptyCartScreen()
-// PaymentMethodScreen()
-// ThanksForOrderScreen()
-// CurrentPasswordScreen()
-// EditUserInfoScreen()
-// OrdersScreen()
-// OrderProcessingScreen()
-// OrderDetailsScreen()
-// CancleOrderScreen()
-// DelivereOrdersdScreen()
-// AddressesScreen()
-// NoAddressScreen()
-// AddNewAddressScreen()
-// ServerErrorScreen()
-// NoInternetScreen()
-// ChatScreen()
-// DiscoverWithImageScreen()
-// SubDiscoverScreen()
-// AddNewCardScreen()
-// EmptyPaymentScreen()
-// GetHelpScreen()
-
-// ℹ️ All the comments screen are included in the full template
-// 🔗 Full template: https://theflutterway.gumroad.com/l/fluttershop
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -204,35 +146,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   return MaterialPageRoute(
     //     builder: (context) => const SetupFaceIdScreen(),
     //   );
-    case productDetailsScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) {
-          bool isProductAvailable = settings.arguments as bool? ?? true;
-          return ProductDetailsScreen(isProductAvailable: isProductAvailable);
-        },
-      );
-    case productReviewsScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const ProductReviewsScreen(),
-      );
-    // case addReviewsScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddReviewScreen(),
-    //   );
-    case homeScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/background.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-            const HomeScreen(),
-          ],
-        ),
-      );
     case chatScreenRoute:
       return MaterialPageRoute(
         builder: (context) => Stack(
@@ -246,42 +159,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             const ChatScreen(),
           ],
         ),
-      );
-    // case brandScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const BrandScreen(),
-    //   );
-    // case discoverWithImageScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const DiscoverWithImageScreen(),
-    //   );
-    // case subDiscoverScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SubDiscoverScreen(),
-    //   );
-    case discoverScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const DiscoverScreen(),
-      );
-    case onSaleScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const OnSaleScreen(),
-      );
-    case kidsScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const KidsScreen(),
-      );
-    case searchScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const SearchScreen(),
-      );
-    // case searchHistoryScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SearchHistoryScreen(),
-    //   );
-    case bookmarkScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const BookmarkScreen(),
       );
     case entryPointScreenRoute:
       return MaterialPageRoute(
@@ -341,7 +218,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case addPlayersScreenRoute:
       final args = settings.arguments as Map<String, dynamic>? ?? {};
-      final int maxPlayers = args['maxPlayers'] as int? ?? 0;
+      // maxPlayers is the actual player count (2 or 4), not an index.
+      // create_game_screen.dart passes vm.playersAmount which is the index into
+      // playersAmountList; router.dart converts it to the real count here.
+      final int? rawMaxPlayers = args['maxPlayers'] as int?;
+      final List<String> playersAmountList = ['2', '4'];
+      final int maxPlayers = (rawMaxPlayers != null &&
+              rawMaxPlayers >= 0 &&
+              rawMaxPlayers < playersAmountList.length)
+          ? int.parse(playersAmountList[rawMaxPlayers])
+          : 4;
       final List<PadlyUser> initialPlayers =
           args['initialPlayers'] as List<PadlyUser>? ?? [];
 
@@ -363,8 +249,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
     case gameDetailScreenRoute:
-      final args = settings.arguments as Map<String, dynamic>? ?? {};
-      final Game game = args['game'] as Game? ?? Game(currentPlayers: []);
+      final args = settings.arguments;
+      final Game? game =
+          (args is Map<String, dynamic>) ? args['game'] as Game? : null;
+
+      if (game == null) {
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: Text(
+                'Match niet gevonden.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ),
+        );
+      }
 
       return MaterialPageRoute(
         builder: (context) => Stack(
@@ -474,50 +374,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           ],
         ),
       );
-    // case noAddressScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const NoAddressScreen(),
-    //   );
-    case addressesScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const AddressesScreen(),
-      );
-    // case addNewAddressesScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddNewAddressScreen(),
-    //   );
-    case ordersScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const OrdersScreen(),
-      );
-    // case orderProcessingScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const OrderProcessingScreen(),
-    //   );
-    // case orderDetailsScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const OrderDetailsScreen(),
-    //   );
-    // case cancleOrderScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const CancleOrderScreen(),
-    //   );
-    // case deliveredOrdersScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const DelivereOrdersdScreen(),
-    //   );
-    // case cancledOrdersScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const CancledOrdersScreen(),
-    //   );
     case preferencesScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const PreferencesScreen(),
       );
-    // case emptyPaymentScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const EmptyPaymentScreen(),
-    //   );
     case emptyWalletScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const EmptyWalletScreen(),
@@ -526,22 +386,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const WalletScreen(),
       );
-    case cartScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const CartScreen(),
-      );
-    // case paymentMethodScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const PaymentMethodScreen(),
-    //   );
-    // case addNewCardScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddNewCardScreen(),
-    //   );
-    // case thanksForOrderScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const ThanksForOrderScreen(),
-    //   );
     default:
       return MaterialPageRoute(
         // Make a screen for undefine

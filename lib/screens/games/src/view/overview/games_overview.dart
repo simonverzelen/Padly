@@ -17,8 +17,39 @@ class GamesOverview extends StatelessWidget {
         final viewModel = context.watch<GamesOverviewViewmodel>();
         final games = viewModel.games;
 
-        return Scaffold(
-          body: RefreshIndicator(
+        Widget body;
+
+        if (viewModel.isLoading) {
+          body = const Center(child: CircularProgressIndicator());
+        } else if (viewModel.errorMessage != null) {
+          body = Center(
+            child: Padding(
+              padding: const EdgeInsets.all(defaultPadding),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    viewModel.errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: defaultPadding),
+                  ElevatedButton(
+                    onPressed: viewModel.refresh,
+                    child: const Text('Opnieuw proberen'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else if (games.isEmpty) {
+          body = const Center(
+            child: Text('Geen matches gevonden'),
+          );
+        } else {
+          body = RefreshIndicator(
+            color: primaryColor,
+            backgroundColor: backgroundColor,
             onRefresh: () async {
               await viewModel.refresh();
             },
@@ -61,8 +92,10 @@ class GamesOverview extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        );
+          );
+        }
+
+        return Scaffold(body: body);
       },
     );
   }

@@ -41,7 +41,11 @@ class Game {
     return Game(
       id: json['id'],
       hostPlayer: json['host_player'] != null
-          ? PadlyUser.fromJson(jsonDecode(json['host_player']))
+          ? PadlyUser.fromJson(
+              json['host_player'] is String
+                  ? jsonDecode(json['host_player'])
+                  : json['host_player'] as Map<String, dynamic>,
+            )
           : null,
       date: json['date'] != null ? DateTime.parse(json['date']) : null,
       startTime: json['start_time'] != null
@@ -51,7 +55,8 @@ class Game {
           json['end_time'] != null ? DateTime.parse(json['end_time']) : null,
       location: json['location'],
       distanceKm: json['distance_km'] != null
-          ? double.parse((json['distance_km'] as double).toStringAsFixed(2))
+          ? double.parse(
+              (json['distance_km'] as num).toDouble().toStringAsFixed(2))
           : null,
       rankingMin:
           json['ranking_min'] != null ? "P${json['ranking_min']}" : null,
@@ -64,8 +69,15 @@ class Game {
           ? (json['max_players'] as num).toInt()
           : null,
       currentPlayers: json['current_players'] != null
-          ? List<PadlyUser>.from(json['current_players']
-              .map((player) => PadlyUser.fromJson(jsonDecode(player))))
+          ? List<PadlyUser>.from(
+              (json['current_players'] as List).map(
+                (player) => PadlyUser.fromJson(
+                  player is String
+                      ? jsonDecode(player)
+                      : player as Map<String, dynamic>,
+                ),
+              ),
+            )
           : null,
       club: json['club'],
       lat: json['lat'] != null ? (json['lat'] as num).toDouble() : null,

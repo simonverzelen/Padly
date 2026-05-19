@@ -72,7 +72,14 @@ class GameDetailBody extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32)),
               ),
-              onPressed: () {},
+              // TODO: implement actual join-game logic
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Functie komt binnenkort beschikbaar'),
+                  ),
+                );
+              },
               child: const Text('Deelnemen'),
             ),
           ),
@@ -89,10 +96,14 @@ class _Location extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<GameDetailViewModel>();
     final game = vm.game;
-    final String gameRank = {game.rankingMin, game.rankingMax}.join(' - ');
+    final String gameRank =
+        '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
-    final int playTime = game.endTime!.difference(game.startTime!).inMinutes;
+    final String playTime =
+        (game.endTime != null && game.startTime != null)
+            ? '${game.endTime!.difference(game.startTime!).inMinutes}'
+            : '-';
 
     return Card(
       color: cardBackgroundColor,
@@ -162,7 +173,7 @@ class _Location extends StatelessWidget {
                         ),
                         const SizedBox(width: defaultPadding / 2),
                         Text(
-                          "${DateFormat('EEE d MMM').format(game.date!)} - $startTime",
+                          "${game.date != null ? DateFormat('EEE d MMM').format(game.date!) : ''} - $startTime",
                           style: Theme.of(context).textTheme.labelMedium,
                         ),
                         const SizedBox(width: defaultPadding / 4),
@@ -180,18 +191,22 @@ class _Location extends StatelessWidget {
                 ),
                 Spacer(),
                 Container(
-                  decoration: const BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.all(
+                  decoration: BoxDecoration(
+                    color: (game.lat != null && game.lng != null)
+                        ? primaryColor
+                        : Colors.grey.shade700,
+                    borderRadius: const BorderRadius.all(
                         Radius.circular(defaultBorderRadious / 4)),
                   ),
                   child: IconButton(
-                    onPressed: () => showNavigationOptions(
-                      context,
-                      lat: game.lat!,
-                      lng: game.lng!,
-                      label: game.club ?? '',
-                    ),
+                    onPressed: (game.lat != null && game.lng != null)
+                        ? () => showNavigationOptions(
+                              context,
+                              lat: game.lat!,
+                              lng: game.lng!,
+                              label: game.club ?? '',
+                            )
+                        : null,
                     icon: SvgPicture.asset(
                       "assets/icons/Location.svg",
                       height: 24,
@@ -338,7 +353,7 @@ class _PlayerList extends StatelessWidget {
       child: WidgetStack(
         positions: settings,
         stackedWidgets: [
-          for (int i = game.currentPlayers!.length - 1; i >= 0; i--)
+          for (int i = (game.currentPlayers ?? []).length - 1; i >= 0; i--)
             Container(
               padding: const EdgeInsets.all(defaultPadding / 8),
               decoration: const BoxDecoration(
@@ -348,9 +363,9 @@ class _PlayerList extends StatelessWidget {
               child: CircleAvatar(
                 radius: 24,
                 backgroundColor: pillBackgroundColor,
-                backgroundImage: i < game.currentPlayers!.length &&
-                        game.currentPlayers![i].imageUrl != null
-                    ? NetworkImage(game.currentPlayers![i].imageUrl!)
+                backgroundImage: i < (game.currentPlayers ?? []).length &&
+                        (game.currentPlayers ?? [])[i].imageUrl != null
+                    ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
                     : null,
               ),
             )
@@ -424,7 +439,7 @@ class _CurrentPlayersList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(defaultPadding / 8),
                 decoration: BoxDecoration(
-                  color: i < game.currentPlayers!.length
+                  color: i < (game.currentPlayers ?? []).length
                       ? whiteColor80
                       : null, // Border color
                   shape: BoxShape.circle,
@@ -432,15 +447,15 @@ class _CurrentPlayersList extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 36,
                   backgroundColor: pillBackgroundColor,
-                  backgroundImage: i < game.currentPlayers!.length &&
-                          game.currentPlayers![i].imageUrl != null
-                      ? NetworkImage(game.currentPlayers![i].imageUrl!)
+                  backgroundImage: i < (game.currentPlayers ?? []).length &&
+                          (game.currentPlayers ?? [])[i].imageUrl != null
+                      ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
                       : null,
                 ),
               ),
-              if (i < game.currentPlayers!.length) ...[
+              if (i < (game.currentPlayers ?? []).length) ...[
                 const SizedBox(height: defaultPadding / 4),
-                Text(game.currentPlayers![i].firstName ?? '',
+                Text((game.currentPlayers ?? [])[i].firstName ?? '',
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall!
@@ -457,7 +472,7 @@ class _CurrentPlayersList extends StatelessWidget {
                       side: const BorderSide(color: Colors.transparent),
                     ),
                     label: Text(
-                      game.currentPlayers![i].rank ?? '',
+                      (game.currentPlayers ?? [])[i].rank ?? '',
                       style: Theme.of(context).textTheme.labelSmall!.copyWith(
                             color: backgroundColor,
                             fontWeight: FontWeight.w700,

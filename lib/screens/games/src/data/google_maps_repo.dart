@@ -1,11 +1,134 @@
-// data/google_places_repository.dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../domain/club.dart';
 
 class GooglePlacesRepository {
+  GooglePlacesRepository();
+
+  final _uuid = const Uuid();
+  final _supabase = Supabase.instance.client;
+
+  String? _sessionToken;
+
+  bool get hasActiveSession => _sessionToken != null;
+
+  void startSession() {
+    if (_sessionToken != null) return;
+    _sessionToken = _uuid.v4();
+  }
+
+  void endSession() {
+    _sessionToken = null;
+  }
+
+  Future<List<AutocompleteResult>> autocomplete(String input) async {
+    try {
+      if (input.trim().isEmpty || input.length < 3) return [];
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) return [];
+
+      final firebaseIdToken = await user.getIdToken(true);
+
+      if (_sessionToken == null) {
+        throw StateError('Call startSession() first.');
+      }
+
+      final response = await _supabase.functions.invoke(
+        'google-places',
+        headers: {
+          'x-firebase-token': 'Bearer $firebaseIdToken',
+        },
+        body: {
+          'type': 'autocomplete',
+          'input': input,
+          'sessionToken': _sessionToken,
+        },
+      );
+
+      if (response.status != 200) {
+        throw Exception('Autocomplete failed: ${response.data}');
+      }
+
+      final body = response.data;
+
+      if (body['status'] != 'OK') return [];
+
+      return (body['predictions'] as List)
+          .map((p) {
+            final fmt = p['structured_formatting'] as Map<String, dynamic>?;
+            return AutocompleteResult(
+              placeId: p['place_id'] as String,
+              name: fmt?['main_text'] as String? ?? '',
+              description: fmt?['secondary_text'] as String? ?? '',
+            );
+          })
+          .toList();
+    } catch (e) {
+      throw Exception('Autocomplete mislukt: $e');
+    }
+  }
+
+  Future<ClubPlace?> getPlaceDetails(String placeId) async {
+    try {
+      if (_sessionToken == null) {
+        throw StateError('Call startSession() first.');
+      }
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) return null;
+
+      final firebaseIdToken = await user.getIdToken(true);
+
+      final response = await _supabase.functions.invoke(
+        'google-places',
+        headers: {
+          'x-firebase-token': 'Bearer $firebaseIdToken',
+        },
+        body: {
+          'type': 'details',
+          'placeId': placeId,
+          'sessionToken': _sessionToken,
+        },
+      );
+
+      if (response.status != 200) {
+        throw Exception('Place details failed: ${response.data}');
+      }
+
+      final body = response.data;
+
+      if (body['status'] != 'OK') return null;
+
+      final result = body['result'] as Map<String, dynamic>;
+
+      final geometry = result['geometry'] as Map<String, dynamic>?;
+      final location = geometry?['location'] as Map<String, dynamic>?;
+      final lat = location?['lat'];
+      final lng = location?['lng'];
+
+      if (lat == null || lng == null) {
+        throw Exception('Locatiegegevens ontbreken');
+      }
+
+      return ClubPlace(
+        placeId: result['place_id'] as String,
+        name: result['name'] as String,
+        address: formatAddress(result['address_components'] as List),
+        city: formatCity(result['address_components'] as List),
+        lat: (lat as num).toDouble(),
+        lng: (lng as num).toDouble(),
+      );
+    } catch (e) {
+      throw Exception('Plaatsdetails ophalen mislukt: $e');
+    }
+  }
+}
+
+/*class GooglePlacesRepository {
   GooglePlacesRepository(this.apiKey);
 
   final String apiKey;
@@ -96,7 +219,7 @@ class GooglePlacesRepository {
     );
   }
 }
-
+*/
 /// INTERNAL AUTOCOMPLETE MODEL
 class AutocompleteResult {
   final String placeId;

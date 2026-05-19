@@ -10,15 +10,46 @@ import '../../domain/club.dart';
 import '../../domain/games_services.dart';
 import 'create_game_viewmodel.dart';
 
-class CreateMatchScreen extends StatelessWidget {
+class CreateMatchScreen extends StatefulWidget {
   const CreateMatchScreen({super.key});
 
   @override
+  State<CreateMatchScreen> createState() => _CreateMatchScreenState();
+}
+
+class _CreateMatchScreenState extends State<CreateMatchScreen> {
+  late final CreateGameViewModel _vm;
+
+  @override
+  void initState() {
+    super.initState();
+    _vm = CreateGameViewModel(gameService: GamesServices());
+    _vm.addListener(_onVmChanged);
+  }
+
+  void _onVmChanged() {
+    if (_vm.error != null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_vm.error!)),
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _vm.removeListener(_onVmChanged);
+    _vm.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CreateGameViewModel(
-        gameService: GamesServices(),
-      ),
+    return ChangeNotifierProvider.value(
+      value: _vm,
       builder: (context, child) {
         final vm = context.watch<CreateGameViewModel>();
         return Scaffold(
@@ -158,8 +189,11 @@ class CreateMatchScreen extends StatelessWidget {
                       ? const SizedBox(
                           height: 18,
                           width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text(vm.error != null ? vm.error! : 'Maak Match'),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: primaryColor,
+                          ))
+                      : const Text('Maak Match'),
                 ),
               ),
             ),
@@ -301,6 +335,7 @@ class _ChipRowScrollState extends State<ChipRowScroll> {
   }
 
   Future<void> _scrollToIndex(int index) async {
+    if (!_controller.hasClients) return;
     final ctx = _keys[index].currentContext;
     if (ctx == null) return;
 
@@ -684,6 +719,8 @@ class DateTimePicker extends StatelessWidget {
                       : 'Tijd',
                   isActive: false,
                   press: () async {
+                    if (vm.selectedDate == null) return;
+
                     final TimeOfDay? selectedTime = await showTimePicker(
                       context: context,
                       initialTime: TimeOfDay.fromDateTime(DateTime.now()),
@@ -781,7 +818,7 @@ class _CurrentPlayersList extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(defaultPadding / 8),
                 decoration: BoxDecoration(
-                  color: i < game.currentPlayers!.length
+                  color: i < (game.currentPlayers ?? []).length
                       ? whiteColor
                       : null, // Border color
                   shape: BoxShape.circle,
@@ -796,11 +833,11 @@ class _CurrentPlayersList extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 36,
                     backgroundColor: pillBackgroundColor,
-                    backgroundImage: i < game.currentPlayers!.length &&
-                            game.currentPlayers![i].imageUrl != null
-                        ? NetworkImage(game.currentPlayers![i].imageUrl!)
+                    backgroundImage: i < (game.currentPlayers ?? []).length &&
+                            (game.currentPlayers ?? [])[i].imageUrl != null
+                        ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
                         : null,
-                    child: i >= game.currentPlayers!.length
+                    child: i >= (game.currentPlayers ?? []).length
                         ? SvgPicture.asset(
                             "assets/icons/Plus1.svg",
                             height: defaultPadding * 1.5,
@@ -811,9 +848,9 @@ class _CurrentPlayersList extends StatelessWidget {
                   ),
                 ),
               ),
-              if (i < game.currentPlayers!.length) ...[
+              if (i < (game.currentPlayers ?? []).length) ...[
                 const SizedBox(height: defaultPadding / 4),
-                Text(game.currentPlayers![i].firstName ?? '',
+                Text((game.currentPlayers ?? [])[i].firstName ?? '',
                     style: Theme.of(context).textTheme.bodySmall!.copyWith(
                           fontWeight: FontWeight.w600,
                           color: whiteColor,
@@ -830,7 +867,7 @@ class _CurrentPlayersList extends StatelessWidget {
                       side: const BorderSide(color: Colors.transparent),
                     ),
                     label: Text(
-                      game.currentPlayers![i].rank ?? '',
+                      (game.currentPlayers ?? [])[i].rank ?? '',
                       style: Theme.of(context).textTheme.labelSmall!.copyWith(
                             color: backgroundColor,
                             fontWeight: FontWeight.w700,

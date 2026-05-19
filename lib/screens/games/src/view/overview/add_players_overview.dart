@@ -32,8 +32,39 @@ class AddPlayersOverview extends StatelessWidget {
   }
 }
 
-class _AddPlayersBody extends StatelessWidget {
+class _AddPlayersBody extends StatefulWidget {
   const _AddPlayersBody();
+
+  @override
+  State<_AddPlayersBody> createState() => _AddPlayersBodyState();
+}
+
+class _AddPlayersBodyState extends State<_AddPlayersBody> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<AddPlayersViewModel>().addListener(_onVmChanged);
+  }
+
+  void _onVmChanged() {
+    final vm = context.read<AddPlayersViewModel>();
+    if (vm.feedbackMessage != null && mounted) {
+      final message = vm.feedbackMessage!;
+      vm.clearFeedbackMessage();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    context.read<AddPlayersViewModel>().removeListener(_onVmChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

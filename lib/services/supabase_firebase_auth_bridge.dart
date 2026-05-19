@@ -11,7 +11,7 @@ class SupabaseFirebaseAuthBridge {
 
   Future<void> signInToSupabaseWithFirebase() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) throw Exception('Gebruiker niet ingelogd');
 
     final firebaseIdToken = await user.getIdToken(true);
 
@@ -34,6 +34,9 @@ class SupabaseFirebaseAuthBridge {
     }
 
     _jwt = token;
+    // RISK: mutating the shared REST client header is not thread-safe and will
+    // affect all concurrent requests. A full per-request auth header approach
+    // should be implemented in a future refactor.
     supabase.rest.headers['Authorization'] = 'Bearer $token';
   }
 
@@ -44,12 +47,40 @@ class SupabaseFirebaseAuthBridge {
     final firstName = data['firstName'];
     final lastName = data['lastName'];
 
-    final response = await supabase.from('profiles').upsert({
+    await supabase.from('profiles').upsert({
       'firebase_uid': currentUser.uid,
       'first_name': firstName,
       'last_name': lastName,
       'full_name': '$firstName $lastName',
       'location': null,
+      'last_seen': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'firebase_uid');
+  }
+
+  Future<bool> profileExistsInSupabase(String firebaseUid) async {
+    final response = await supabase
+        .from('profiles')
+        .select('firebase_uid')
+        .eq('firebase_uid', firebaseUid)
+        .maybeSingle();
+    return response != null;
+  }
+
+  Future<void> syncProfileFromFirestore(
+      Map<String, dynamic> firestoreData, String firebaseUid) async {
+    final firstName = firestoreData['firstName'] as String?;
+    final lastName = firestoreData['lastName'] as String?;
+    final fullName = firestoreData['name'] as String? ??
+        '${firstName ?? ''} ${lastName ?? ''}'.trim();
+
+    await supabase.from('profiles').upsert({
+      'firebase_uid': firebaseUid,
+      'first_name': firstName,
+      'last_name': lastName,
+      'full_name': fullName,
+      'email': firestoreData['email'] as String?,
+      'avatar_url': firestoreData['imageUrl'] as String?,
       'last_seen': DateTime.now().toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
     }, onConflict: 'firebase_uid');

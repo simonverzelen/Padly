@@ -1,15 +1,12 @@
-import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:padly/route/route_constants.dart';
 import 'package:padly/route/router.dart' as router;
-import 'package:padly/screens/notification/src/domain/notification_service.dart';
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
 import 'package:padly/screens/user_info/src/domain/user_service.dart';
 import 'package:padly/theme/app_theme.dart';
@@ -98,12 +95,18 @@ Future<void> main() async {
     // });
   }*/
 
-  final UserService _userService = UserService();
-  final PadlyUser? _userInfo = await _userService.getUser();
+  final UserService userService = UserService();
+  PadlyUser? userInfo;
+  try {
+    userInfo = await userService.getUser();
+  } catch (_) {
+    // Non-fatal: continue to runApp with no user info; auth gate will redirect.
+    userInfo = null;
+  }
 
   //await _pushNotifications.sendMessageNotification("title", "body");
 
-  runApp(MyApp(userInfo: _userInfo));
+  runApp(MyApp(userInfo: userInfo));
 }
 
 class MyApp extends StatelessWidget {
@@ -117,7 +120,7 @@ class MyApp extends StatelessWidget {
     final route = currentUser != null
         ? userInfo?.firstName != null && userInfo?.lastName != null
             ? entryPointScreenRoute
-            : logInScreenRoute
+            : onbordingScreenRoute
         : notificationPermissionScreenRoute;
 
     return MaterialApp(

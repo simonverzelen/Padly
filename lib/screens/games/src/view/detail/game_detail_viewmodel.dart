@@ -40,14 +40,14 @@ Future<void> showNavigationOptions(
         : 'google.navigation:q=$lat,$lng',
   );
 
-  //if (await canLaunchUrl(googleMapsUri)) {
-  options.add(
-    _NavOption(
-      name: "Google Maps",
-      uri: googleMapsUri,
-    ),
-  );
-  //}
+  if (await canLaunchUrl(googleMapsUri)) {
+    options.add(
+      _NavOption(
+        name: "Google Maps",
+        uri: googleMapsUri,
+      ),
+    );
+  }
 
   // Apple Maps (iOS only)
   if (Platform.isIOS) {
@@ -66,14 +66,14 @@ Future<void> showNavigationOptions(
   // Waze
   final wazeUri = Uri.parse('waze://?ll=$lat,$lng&navigate=yes');
 
-  //if (await canLaunchUrl(wazeUri)) {
-  options.add(
-    _NavOption(
-      name: "Waze",
-      uri: wazeUri,
-    ),
-  );
-  //}
+  if (await canLaunchUrl(wazeUri)) {
+    options.add(
+      _NavOption(
+        name: "Waze",
+        uri: wazeUri,
+      ),
+    );
+  }
 
   // Always add fallback (browser Google Maps)
   final browserFallback = Uri.parse(
@@ -88,6 +88,7 @@ Future<void> showNavigationOptions(
   );
 
   // Show bottom sheet
+  if (!context.mounted) return;
   showModalBottomSheet(
     context: context,
     builder: (_) => SafeArea(
@@ -106,10 +107,21 @@ Future<void> showNavigationOptions(
                   title: Text(option.name),
                   onTap: () async {
                     Navigator.pop(context);
-                    await launchUrl(
-                      option.uri,
-                      mode: LaunchMode.externalApplication,
-                    );
+                    try {
+                      await launchUrl(
+                        option.uri,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                'Navigatie-app kon niet worden geopend: $e'),
+                          ),
+                        );
+                      }
+                    }
                   },
                 ),
               )

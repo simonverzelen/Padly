@@ -15,8 +15,11 @@ class GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String gameRank = {game.rankingMin, game.rankingMax}.join(' - ');
-    final startDate = DateFormat('EEE d MMM').format(game.date!);
+    final String gameRank =
+        '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
+    final startDate = game.date != null
+        ? DateFormat('EEE d MMM').format(game.date!)
+        : '';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
 
@@ -61,8 +64,11 @@ class GameCardFeatured extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String gameRank = {game.rankingMin, game.rankingMax}.join(' - ');
-    final startDate = DateFormat('EEE d MMM').format(game.date!);
+    final String gameRank =
+        '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
+    final startDate = game.date != null
+        ? DateFormat('EEE d MMM').format(game.date!)
+        : '';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
 
@@ -169,7 +175,10 @@ class _LocationInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
-    final int playTime = game.endTime!.difference(game.startTime!).inMinutes;
+    final String playTime =
+        (game.endTime != null && game.startTime != null)
+            ? '${game.endTime!.difference(game.startTime!).inMinutes}'
+            : '-';
 
     return isDense
         ? Wrap(
@@ -323,7 +332,7 @@ class _HostPlayer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: defaultPadding),
                 child: Text(
-                  '${game.currentPlayers!.length}/4',
+                  '${(game.currentPlayers ?? []).length}/4',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
@@ -345,7 +354,7 @@ class _HostPlayer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: defaultPadding / 2),
                 child: Text(
-                  '${game.currentPlayers!.length}/4',
+                  '${(game.currentPlayers ?? []).length}/4',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
@@ -372,7 +381,7 @@ class _PlayerList extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(defaultPadding / 8),
             decoration: BoxDecoration(
-              color: index < game.currentPlayers!.length
+              color: index < (game.currentPlayers ?? []).length
                   ? whiteColor80
                   : cardBackgroundWithOpacity, // Border color
               shape: BoxShape.circle,
@@ -380,13 +389,13 @@ class _PlayerList extends StatelessWidget {
             child: CircleAvatar(
               radius: 24,
               backgroundColor: pillBackgroundColor,
-              backgroundImage: index < game.currentPlayers!.length &&
-                      game.currentPlayers![index].imageUrl != null
-                  ? NetworkImage(game.currentPlayers![index].imageUrl!)
+              backgroundImage: index < (game.currentPlayers ?? []).length &&
+                      (game.currentPlayers ?? [])[index].imageUrl != null
+                  ? NetworkImage((game.currentPlayers ?? [])[index].imageUrl!)
                   : null,
             ),
           ),
-          if (index < game.currentPlayers!.length)
+          if (index < (game.currentPlayers ?? []).length)
             Transform(
               transform: Matrix4.identity()
                 ..scale(0.6)
@@ -399,7 +408,7 @@ class _PlayerList extends StatelessWidget {
                   side: const BorderSide(color: Colors.transparent),
                 ),
                 label: Text(
-                  game.currentPlayers![index].rank ?? '',
+                  (game.currentPlayers ?? [])[index].rank ?? '',
                   style: Theme.of(context).textTheme.labelMedium!.copyWith(
                         color: backgroundColor,
                         fontWeight: FontWeight.w700,

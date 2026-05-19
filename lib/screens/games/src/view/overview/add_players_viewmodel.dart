@@ -19,6 +19,11 @@ class AddPlayersViewModel extends ChangeNotifier {
   List<PadlyUser> searchResults = [];
   String searchQuery = '';
   bool isLoading = false;
+  String? errorMessage;
+
+  /// Set by [togglePlayer] when [canAddMore] is false.
+  /// The view should read this and show a SnackBar, then clear it.
+  String? feedbackMessage;
 
   // --------------------
   // Derived state
@@ -35,8 +40,9 @@ class AddPlayersViewModel extends ChangeNotifier {
   // Actions
   // --------------------
 
-  void setSearch(String value) async {
+  Future<void> setSearch(String value) async {
     searchQuery = value.trim();
+    errorMessage = null;
 
     if (searchQuery.isEmpty) {
       searchResults = [];
@@ -47,10 +53,15 @@ class AddPlayersViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    searchResults = await userService.searchPlayers(searchQuery);
-
-    isLoading = false;
-    notifyListeners();
+    try {
+      searchResults = await userService.searchPlayers(searchQuery);
+    } catch (e) {
+      errorMessage = e.toString();
+      searchResults = [];
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void togglePlayer(PadlyUser user) {
@@ -59,12 +70,21 @@ class AddPlayersViewModel extends ChangeNotifier {
     if (index >= 0) {
       selectedPlayers.removeAt(index);
     } else {
-      if (!canAddMore) return;
+      if (!canAddMore) {
+        feedbackMessage = 'Maximum aantal spelers bereikt ($maxPlayers)';
+        notifyListeners();
+        return;
+      }
       selectedPlayers.add(user);
       _addToRecent(user);
     }
 
     notifyListeners();
+  }
+
+  /// Called by the view after it has displayed [feedbackMessage].
+  void clearFeedbackMessage() {
+    feedbackMessage = null;
   }
 
   void _addToRecent(PadlyUser user) {

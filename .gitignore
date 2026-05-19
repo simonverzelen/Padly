@@ -49,3 +49,9 @@ app.*.map.json
 .env
 android/local.properties
 ios/Flutter/Secrets.xcconfig
+
+# Claude Code local config (may contain tokens/secrets)
+.claude/
+
+# Supabase local temp files
+supabase/.temp/

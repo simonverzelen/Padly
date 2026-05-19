@@ -11,7 +11,15 @@ class RecentClubsCache {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_key) ?? [];
 
-    return raw.map((e) => ClubPlace.fromJson(json.decode(e))).toList();
+    final clubs = <ClubPlace>[];
+    for (final e in raw) {
+      try {
+        clubs.add(ClubPlace.fromJson(json.decode(e) as Map<String, dynamic>));
+      } catch (_) {
+        // Skip corrupt cache entries rather than crashing the whole load.
+      }
+    }
+    return clubs;
   }
 
   Future<void> save(List<ClubPlace> clubs) async {

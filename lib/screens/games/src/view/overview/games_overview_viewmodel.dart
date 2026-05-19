@@ -5,6 +5,9 @@ class GamesOverviewViewmodel with ChangeNotifier {
   List<Game> _games = [];
   List<Game> get games => _games;
 
+  bool isLoading = false;
+  String? errorMessage;
+
   GamesOverviewViewmodel() {
     init();
   }
@@ -12,12 +15,32 @@ class GamesOverviewViewmodel with ChangeNotifier {
   final GamesServices _gamesServices = GamesServices();
 
   Future<void> init() async {
-    _games = await _gamesServices.fetchGames();
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
+
+    try {
+      _games = await _gamesServices.fetchGames();
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refresh() async {
-    _games = await _gamesServices.fetchGames();
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
+
+    try {
+      _games = await _gamesServices.fetchGames();
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

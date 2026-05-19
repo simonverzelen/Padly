@@ -29,20 +29,31 @@ class SearchClubViewModel extends ChangeNotifier {
   List<ClubPlace> get filteredRecentClubs => _filteredRecent;
 
   String _query = '';
+  String? _error;
+  String? get errorMessage => _error;
 
   List<ClubPlace> get recentClubs => List.unmodifiable(_recentClubs);
-  bool get isSearching => _query.isNotEmpty;
+  bool _isSearching = false;
+  bool get isSearching => _query.isNotEmpty || _isSearching;
 
   Future<void> _loadRecentClubs() async {
-    final stored = await _cache.load();
-    _recentClubs
-      ..clear()
-      ..addAll(stored);
-    notifyListeners();
+    try {
+      final stored = await _cache.load();
+      _recentClubs
+        ..clear()
+        ..addAll(stored);
+      notifyListeners();
+    } catch (e) {
+      // Corrupt cache — clear the bad entry and start fresh.
+      await _cache.clear();
+      _recentClubs.clear();
+      notifyListeners();
+    }
   }
 
   void onSearchChanged(String value) {
     _query = value;
+    _error = null;
     results = [];
     notifyListeners();
 
@@ -50,7 +61,6 @@ class SearchClubViewModel extends ChangeNotifier {
     _searchOperation?.cancel();
 
     if (value.isEmpty) {
-      print('end session');
       _repo.endSession();
       return;
     }
@@ -65,12 +75,20 @@ class SearchClubViewModel extends ChangeNotifier {
     _repo.startSession();
 
     _debounce = Timer(const Duration(milliseconds: 350), () {
+      _isSearching = true;
+      notifyListeners();
+
       _searchOperation = CancelableOperation.fromFuture(
         _repo.autocomplete(value),
       );
 
       _searchOperation!.value.then((r) {
         results = r;
+        _isSearching = false;
+        notifyListeners();
+      }).catchError((e) {
+        _error = e.toString();
+        _isSearching = false;
         notifyListeners();
       });
     });

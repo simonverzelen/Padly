@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:padly/constants.dart';
-import 'package:padly/models/product_model.dart';
 
 import 'components/wallet_balance_card.dart';
 import 'components/wallet_history_card.dart';
@@ -45,22 +44,6 @@ class WalletScreen extends StatelessWidget {
                       isReturn: index == 1,
                       date: "JUN 12, 2020",
                       amount: 129,
-                      products: [
-                        ProductModel(
-                          image: productDemoImg1,
-                          title: "Mountain Warehouse for Women",
-                          brandName: "Lipsy london",
-                          price: 540,
-                          priceAfetDiscount: 420,
-                          dicountpercent: 20,
-                        ),
-                        ProductModel(
-                          image: productDemoImg4,
-                          title: "Mountain Beta Warehouse",
-                          brandName: "Lipsy london",
-                          price: 800,
-                        ),
-                      ],
                     ),
                   ),
                   childCount: 4,

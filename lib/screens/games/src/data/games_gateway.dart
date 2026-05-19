@@ -16,22 +16,22 @@ class GamesGateway {
     required this.authBridge,
   });
 
-  Future<List<Game>?> fethcGames() async {
-    final dataDoc = await _firestore.collection('games').get();
-    // return List<Game>.from(
-    //   data.docs.map((doc) => Game.fromJson(doc.data())).toList(),
-    // );
-
-    final data = dataDoc.docs.map((doc) => doc.data()).toList();
-    print(data);
-    final List<Game> games = List<Game>.from(
-      data.map((gameData) => Game.fromJson(gameData)).toList(),
-    );
-    return games;
+  Future<List<Game>> fethcGames() async {
+    try {
+      final dataDoc = await _firestore.collection('games').get();
+      final data = dataDoc.docs.map((doc) => doc.data()).toList();
+      return List<Game>.from(
+        data.map((gameData) => Game.fromJson(gameData)).toList(),
+      );
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<List<Game>?> fethSupabaseGames() async {
     try {
+      // NOTE: lat/lng are hardcoded for now (Kortrijk, Belgium).
+      // TODO: replace with the user's actual device location.
       final response = await supabase.rpc('get_games_filtered', params: {
         'search_lon': 3.26,
         'search_lat': 50.83,
@@ -57,15 +57,19 @@ class GamesGateway {
   }
 
   Future<Map<String, dynamic>> createGame(GameCreate game) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    try {
+      await authBridge.signInToSupabaseWithFirebase();
 
-    final insertedRow = await supabase
-        .from('games')
-        .insert({
-          ...game.toInsertJson(),
-        })
-        .select()
-        .single();
-    return insertedRow;
+      final insertedRow = await supabase
+          .from('games')
+          .insert({
+            ...game.toInsertJson(),
+          })
+          .select()
+          .single();
+      return insertedRow;
+    } catch (e) {
+      throw Exception('Game aanmaken mislukt: $e');
+    }
   }
 }
