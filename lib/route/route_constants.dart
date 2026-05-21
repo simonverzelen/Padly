@@ -23,3 +23,4 @@ const String gameDetailScreenRoute = "game_detail";
 const String gameRequestsScreenRoute = "game_requests";
 const String searchClubScreenRoute = "search_club";
 const String addPlayersScreenRoute = "add_players";
+const String findMatchScreenRoute = "find_match";

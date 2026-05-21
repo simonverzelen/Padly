@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,7 +30,10 @@ Future firebaseBackgroundMessage(RemoteMessage message) async {
 }
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  // Keep the native splash visible while the app initialises.
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Load env file
   await dotenv.load(fileName: ".env");
@@ -50,7 +54,7 @@ Future<void> main() async {
   FirebaseAuth.instance.setLanguageCode('nl');
 
   if (kDebugMode) {
-    await seedMockUsers();
+    //await seedMockUsers();
   }
 
   /*final _firebaseMessaging = FirebaseMessaging.instance;
@@ -111,6 +115,9 @@ Future<void> main() async {
   }
 
   //await _pushNotifications.sendMessageNotification("title", "body");
+
+  // All initialisation complete — dismiss the native splash.
+  FlutterNativeSplash.remove();
 
   runApp(MyApp(userInfo: userInfo));
 }

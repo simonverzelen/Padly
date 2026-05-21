@@ -79,8 +79,10 @@ class AuthService {
           (data['firstName'] as String?)?.isNotEmpty == true &&
           (data['lastName'] as String?)?.isNotEmpty == true;
 
+      final bridge = SupabaseFirebaseAuthBridge(Supabase.instance.client);
+      await bridge.signInToSupabaseWithFirebase();
+
       if (hasProfile) {
-        final bridge = SupabaseFirebaseAuthBridge(Supabase.instance.client);
         final existsInSupabase =
             await bridge.profileExistsInSupabase(user.uid);
         if (!existsInSupabase) {

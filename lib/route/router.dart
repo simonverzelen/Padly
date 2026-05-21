@@ -7,6 +7,7 @@ import 'package:padly/screens/user_info/src/domain/user_service.dart';
 
 import '../screens/auth/views/password_recovery.dart';
 import '../screens/games/src/view/overview/add_players_overview.dart';
+import '../screens/games/src/view/overview/find_match_screen.dart';
 import '../screens/games/src/view/overview/requests_overview.dart';
 import '../screens/games/src/view/detail/search_club_screen.dart';
 import 'screen_export.dart';
@@ -387,6 +388,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case walletScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const WalletScreen(),
+      );
+    case findMatchScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const FindMatchScreen(),
+          ],
+        ),
       );
     default:
       return MaterialPageRoute(

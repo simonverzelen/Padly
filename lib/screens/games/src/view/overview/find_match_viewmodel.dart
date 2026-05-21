@@ -1,23 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:padly/screens/games/games.dart';
-import 'package:padly/screens/user_info/src/domain/padly_user.dart';
-import 'package:padly/screens/user_info/src/domain/user_service.dart';
 
-class GamesOverviewViewmodel with ChangeNotifier {
+class FindMatchViewmodel with ChangeNotifier {
   List<Game> _games = [];
   List<Game> get games => _games;
 
-  List<Game> get myGames {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return [];
-    return _games
-        .where((g) => g.currentPlayers?.any((p) => p.id == uid) == true)
-        .toList();
-  }
-
-  PadlyUser? _currentUser;
-  PadlyUser? get currentUser => _currentUser;
+  bool isLoading = false;
+  String? errorMessage;
 
   String _selectedSport = 'Padel';
   String get selectedSport => _selectedSport;
@@ -26,10 +15,7 @@ class GamesOverviewViewmodel with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isLoading = false;
-  String? errorMessage;
-
-  GamesOverviewViewmodel() {
+  FindMatchViewmodel() {
     init();
   }
 
@@ -39,7 +25,6 @@ class GamesOverviewViewmodel with ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
-
     try {
       _games = await _gamesServices.fetchGames();
     } catch (e) {
@@ -48,21 +33,12 @@ class GamesOverviewViewmodel with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
-
-    await _loadCurrentUser();
-  }
-
-  Future<void> _loadCurrentUser() async {
-    final user = await UserService().getUser();
-    _currentUser = user;
-    notifyListeners();
   }
 
   Future<void> refresh() async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
-
     try {
       _games = await _gamesServices.fetchGames();
     } catch (e) {
