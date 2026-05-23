@@ -135,14 +135,20 @@ class GameDetailViewModel extends ChangeNotifier {
   Future<void> removePlayer(PadlyUser user) async {
     if (_game.id == null) return;
     isActionLoading = true;
+    actionError = null;
     notifyListeners();
     try {
       final newPlayers = (_game.currentPlayers ?? [])
           .where((u) => u.id != user.id)
           .toList();
-      await _gamesServices.removePlayer(
-          _game.id!,
-          newPlayers.map<Map<String, dynamic>>((u) => u.toJson()).toList());
+      final isSelfRemoval = user.id != null && user.id == _currentUser?.id;
+      if (isSelfRemoval) {
+        await _gamesServices.removePlayerSelf(_game.id!, user.id!);
+      } else {
+        await _gamesServices.removePlayer(
+            _game.id!,
+            newPlayers.map<Map<String, dynamic>>((u) => u.toJson()).toList());
+      }
       _game = _game.copyWith(currentPlayers: newPlayers);
     } catch (e) {
       actionError = e.toString();

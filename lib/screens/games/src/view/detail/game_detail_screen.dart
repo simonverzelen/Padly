@@ -187,10 +187,9 @@ class _Location extends StatelessWidget {
         '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
-    final String playTime =
-        (game.endTime != null && game.startTime != null)
-            ? '${game.endTime!.difference(game.startTime!).inMinutes}'
-            : '-';
+    final String playTime = (game.endTime != null && game.startTime != null)
+        ? '${game.endTime!.difference(game.startTime!).inMinutes}'
+        : '-';
 
     return Card(
       color: cardBackgroundColor,
@@ -450,10 +449,10 @@ class _PlayerList extends StatelessWidget {
               child: CircleAvatar(
                 radius: 24,
                 backgroundColor: pillBackgroundColor,
-                backgroundImage: i < requests.length &&
-                        requests[i].imageUrl != null
-                    ? NetworkImage(requests[i].imageUrl!)
-                    : null,
+                backgroundImage:
+                    i < requests.length && requests[i].imageUrl != null
+                        ? NetworkImage(requests[i].imageUrl!)
+                        : null,
               ),
             )
         ],
@@ -536,10 +535,10 @@ class _CurrentPlayersList extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 36,
                       backgroundColor: pillBackgroundColor,
-                      backgroundImage: i < players.length &&
-                              players[i].imageUrl != null
-                          ? NetworkImage(players[i].imageUrl!)
-                          : null,
+                      backgroundImage:
+                          i < players.length && players[i].imageUrl != null
+                              ? NetworkImage(players[i].imageUrl!)
+                              : null,
                     ),
                   ),
                   if (vm.isOwner &&
@@ -657,9 +656,21 @@ class _CurrentPlayersList extends StatelessWidget {
                             ),
                           );
                           if (confirmed == true && context.mounted) {
-                            context
+                            await context
                                 .read<GameDetailViewModel>()
                                 .removePlayer(player);
+                            if (context.mounted) {
+                              final error = context
+                                  .read<GameDetailViewModel>()
+                                  .actionError;
+                              if (error != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Verlaten mislukt: $error'),
+                                  ),
+                                );
+                              }
+                            }
                           }
                         },
                         child: Container(

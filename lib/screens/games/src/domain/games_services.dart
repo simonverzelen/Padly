@@ -81,6 +81,14 @@ class GamesServices {
     }
   }
 
+  Future<void> removePlayerSelf(String gameId, String userId) async {
+    try {
+      await _gamesGateway.removePlayerSelf(gameId, userId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> updateGame(String gameId, GameCreate game) async {
     try {
       await _gamesGateway.updateGame(gameId, game);

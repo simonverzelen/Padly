@@ -129,6 +129,14 @@ class GamesGateway {
         .eq('id', gameId);
   }
 
+  Future<void> removePlayerSelf(String gameId, String userId) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase.rpc('remove_player_self', params: {
+      'p_game_id': gameId,
+      'p_user_id': userId,
+    });
+  }
+
   Future<void> updateGame(String gameId, GameCreate game) async {
     await authBridge.signInToSupabaseWithFirebase();
     await supabase
