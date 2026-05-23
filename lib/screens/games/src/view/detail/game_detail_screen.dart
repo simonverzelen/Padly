@@ -347,16 +347,21 @@ class _RequestPlayers extends StatelessWidget {
     final vm = context.watch<GameDetailViewModel>();
     final game = vm.game;
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        gameRequestsScreenRoute,
-        arguments: GameRequestsArgs(
-          gameId: game.id ?? '',
-          requests: game.joinRequests ?? [],
-          currentPlayers: game.currentPlayers ?? [],
-          isOwner: vm.isOwner,
-        ),
-      ),
+      onTap: () async {
+        await Navigator.pushNamed(
+          context,
+          gameRequestsScreenRoute,
+          arguments: GameRequestsArgs(
+            gameId: game.id ?? '',
+            requests: game.joinRequests ?? [],
+            currentPlayers: game.currentPlayers ?? [],
+            isOwner: vm.isOwner,
+          ),
+        );
+        if (context.mounted) {
+          context.read<GameDetailViewModel>().load();
+        }
+      },
       child: Card(
         color: cardBackgroundColor,
         shape: RoundedRectangleBorder(
@@ -571,6 +576,90 @@ class _CurrentPlayersList extends StatelessWidget {
                           );
                           if (confirmed == true) {
                             vm.removePlayer(player);
+                          }
+                        },
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.x,
+                              size: 12, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  if (vm.isOwner && i >= players.length)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            addPlayersScreenRoute,
+                            arguments: {
+                              'maxPlayers': game.maxPlayers == 2 ? 0 : 1,
+                              'initialPlayers': players,
+                              'lockedPlayerId': game.hostPlayer?.id,
+                            },
+                          );
+                          if (context.mounted && result is List<PadlyUser>) {
+                            context
+                                .read<GameDetailViewModel>()
+                                .updatePlayers(result);
+                          }
+                        },
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.plus,
+                              size: 12, color: blackColor),
+                        ),
+                      ),
+                    ),
+                  if (!vm.isOwner &&
+                      vm.isInMatch &&
+                      i < players.length &&
+                      players[i].id == vm.currentUser?.id)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final player = players[i];
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              backgroundColor: cardBackgroundColor,
+                              title: const Text('Match verlaten'),
+                              content: const Text(
+                                  'Ben je zeker dat je de match wil verlaten?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Annuleren'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'Verlaten',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true && context.mounted) {
+                            context
+                                .read<GameDetailViewModel>()
+                                .removePlayer(player);
                           }
                         },
                         child: Container(

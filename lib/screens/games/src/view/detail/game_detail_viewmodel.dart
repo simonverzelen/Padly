@@ -152,6 +152,24 @@ class GameDetailViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> updatePlayers(List<PadlyUser> newPlayers) async {
+    if (_game.id == null) return;
+    isActionLoading = true;
+    notifyListeners();
+    try {
+      await _gamesServices.removePlayer(
+        _game.id!,
+        newPlayers.map<Map<String, dynamic>>((u) => u.toJson()).toList(),
+      );
+      _game = _game.copyWith(currentPlayers: newPlayers);
+    } catch (e) {
+      actionError = e.toString();
+    } finally {
+      isActionLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> deleteGame() async {
     if (_game.id == null) return false;
     try {

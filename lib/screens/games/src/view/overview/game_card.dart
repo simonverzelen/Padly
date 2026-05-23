@@ -5,17 +5,17 @@ import 'package:padly/constants.dart';
 import 'package:padly/route/screen_export.dart';
 import 'package:padly/screens/games/games.dart';
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
-import 'package:provider/provider.dart';
-import 'games_overview_viewmodel.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
   final PadlyUser? currentUser;
+  final VoidCallback? onReturn;
 
   const GameCard({
     super.key,
     required this.game,
     this.currentUser,
+    this.onReturn,
   });
 
   @override
@@ -34,9 +34,7 @@ class GameCard extends StatelessWidget {
           gameDetailScreenRoute,
           arguments: {'game': game, 'currentUser': currentUser},
         );
-        if (context.mounted) {
-          context.read<GamesOverviewViewmodel>().refresh();
-        }
+        if (context.mounted) onReturn?.call();
       },
       child: Card(
         color: cardBackgroundColor,
@@ -71,11 +69,13 @@ class GameCard extends StatelessWidget {
 class GameCardFeatured extends StatelessWidget {
   final Game game;
   final PadlyUser? currentUser;
+  final VoidCallback? onReturn;
 
   const GameCardFeatured({
     super.key,
     required this.game,
     this.currentUser,
+    this.onReturn,
   });
 
   @override
@@ -94,9 +94,7 @@ class GameCardFeatured extends StatelessWidget {
           gameDetailScreenRoute,
           arguments: {'game': game, 'currentUser': currentUser},
         );
-        if (context.mounted) {
-          context.read<GamesOverviewViewmodel>().refresh();
-        }
+        if (context.mounted) onReturn?.call();
       },
       child: Card(
         color: cardFeaturedBackgroundColor,

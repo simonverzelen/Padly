@@ -149,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
               ],
             ),
-            bottomNavigationBar: const BottomNavigation(index: 4),
+            bottomNavigationBar: const BottomNavigation(index: 2),
           );
         },
       ),

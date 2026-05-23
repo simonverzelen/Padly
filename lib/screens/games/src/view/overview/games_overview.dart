@@ -208,28 +208,11 @@ class GamesOverview extends StatelessWidget {
                               defaultPadding / 2,
                               defaultPadding / 2,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Komende Matches",
-                                  style: textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    findMatchScreenRoute,
-                                  ),
-                                  child: Text(
-                                    "Bekijk Alles",
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      color: whiteColor60,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              "Komende Matches",
+                              style: textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -245,7 +228,7 @@ class GamesOverview extends StatelessWidget {
                                     .map(
                                       (g) => SizedBox(
                                         width: screenWidth * 0.7,
-                                        child: GameCardFeatured(game: g, currentUser: vm.currentUser),
+                                        child: GameCardFeatured(game: g, currentUser: vm.currentUser, onReturn: vm.refresh),
                                       ),
                                     )
                                     .toList(),
@@ -301,7 +284,7 @@ class GamesOverview extends StatelessWidget {
 
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
-                            (context, index) => GameCard(game: games[index], currentUser: vm.currentUser),
+                            (context, index) => GameCard(game: games[index], currentUser: vm.currentUser, onReturn: vm.refresh),
                             childCount: games.length,
                           ),
                         ),

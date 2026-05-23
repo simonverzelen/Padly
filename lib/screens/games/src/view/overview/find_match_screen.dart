@@ -93,7 +93,7 @@ class FindMatchScreen extends StatelessWidget {
           SliverSafeArea(
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => GameCard(game: vm.games[index]),
+                (context, index) => GameCard(game: vm.games[index], currentUser: vm.currentUser, onReturn: vm.refresh),
                 childCount: vm.games.length,
               ),
             ),
