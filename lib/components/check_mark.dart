@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../constants.dart';
 
@@ -22,10 +22,7 @@ class CheckMark extends StatelessWidget {
       backgroundColor: activeColor,
       child: Padding(
         padding: padding,
-        child: SvgPicture.asset(
-          "assets/icons/Singlecheck.svg",
-          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-        ),
+        child: Icon(LucideIcons.check, size: radious, color: iconColor),
       ),
     );
   }

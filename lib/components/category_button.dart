@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:padly/constants.dart';
 
 class CategoryButton extends StatelessWidget {
   const CategoryButton({
     super.key,
     required this.text,
-    this.svgSrc,
+    this.icon,
     required this.isActive,
     required this.press,
     this.isDisabled = false,
   });
 
   final String text;
-  final String? svgSrc;
+  final IconData? icon;
   final bool isActive;
   final VoidCallback press;
   final bool isDisabled;
@@ -42,16 +41,13 @@ class CategoryButton extends StatelessWidget {
             alignment: WrapAlignment.center,
             runAlignment: WrapAlignment.center,
             children: [
-              if (svgSrc != null)
-                SvgPicture.asset(
-                  svgSrc!,
-                  height: defaultPadding,
-                  colorFilter: ColorFilter.mode(
-                    isActive ? backgroundColor : whiteColor,
-                    BlendMode.srcIn,
-                  ),
+              if (icon != null)
+                Icon(
+                  icon,
+                  size: defaultPadding,
+                  color: isActive ? backgroundColor : whiteColor,
                 ),
-              if (svgSrc != null) const SizedBox(width: defaultPadding / 2),
+              if (icon != null) const SizedBox(width: defaultPadding / 2),
               Text(
                 text,
                 style: TextStyle(

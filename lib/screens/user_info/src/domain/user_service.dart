@@ -66,6 +66,20 @@ class UserService {
     }
   }
 
+  Future<void> saveSportsAndLevels({
+    required List<String> selectedSports,
+    required Map<String, String> sportLevels,
+  }) async {
+    await _userGateway.updateUserWithJson({
+      'selectedSports': selectedSports,
+      'sportLevels': sportLevels,
+    });
+    await _supabaseAuthBridge.updateSportsAndLevels(
+      selectedSports: selectedSports,
+      sportLevels: sportLevels,
+    );
+  }
+
   Future<void> saveImageUrlToFirestore(String downloadUrl) async {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     await FirebaseFirestore.instance.collection('users').doc(userId).update({

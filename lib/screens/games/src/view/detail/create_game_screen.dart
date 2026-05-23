@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:padly/components/category_button.dart';
 import 'package:padly/constants.dart';
@@ -8,11 +8,14 @@ import 'package:padly/screens/user_info/src/domain/padly_user.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/club.dart';
+import '../../domain/game.dart';
 import '../../domain/games_services.dart';
 import 'create_game_viewmodel.dart';
 
 class CreateMatchScreen extends StatefulWidget {
-  const CreateMatchScreen({super.key});
+  final Game? initialGame;
+
+  const CreateMatchScreen({super.key, this.initialGame});
 
   @override
   State<CreateMatchScreen> createState() => _CreateMatchScreenState();
@@ -24,7 +27,8 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
   @override
   void initState() {
     super.initState();
-    _vm = CreateGameViewModel(gameService: GamesServices());
+    _vm = CreateGameViewModel(
+        gameService: GamesServices(), initialGame: widget.initialGame);
     _vm.addListener(_onVmChanged);
   }
 
@@ -61,7 +65,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'Maak een match',
+              vm.isEditing ? 'Pas match aan' : 'Maak een match',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             centerTitle: true,
@@ -190,7 +194,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
                         borderRadius: BorderRadius.circular(32)),
                   ),
                   onPressed:
-                      vm.canCreateGame && !vm.isSaving ? vm.createGame : null,
+                      vm.canCreateGame && !vm.isSaving ? vm.saveGame : null,
                   child: vm.isSaving
                       ? const SizedBox(
                           height: 18,
@@ -199,7 +203,7 @@ class _CreateMatchScreenState extends State<CreateMatchScreen> {
                             strokeWidth: 2,
                             color: primaryColor,
                           ))
-                      : const Text('Maak Match'),
+                      : Text(vm.isEditing ? 'Opslaan' : 'Maak Match'),
                 ),
               ),
             ),
@@ -252,11 +256,11 @@ class LocationCard extends StatelessWidget {
         child: Row(
           children: [
             if (vm.location != null) ...[
-              const Icon(Icons.location_on_outlined, color: Colors.white60)
+              const Icon(LucideIcons.mapPin, color: Colors.white60)
             ] else ...[
-              SvgPicture.asset(
-                "assets/icons/Search.svg",
-                height: 24,
+              Icon(
+                LucideIcons.search,
+                size: 24,
                 color: Theme.of(context).inputDecorationTheme.hintStyle!.color,
               ),
             ],
@@ -295,7 +299,7 @@ class LocationCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: whiteColor),
+            const Icon(LucideIcons.chevronRight, color: whiteColor),
           ],
         ),
       ),
@@ -321,7 +325,7 @@ class ChipRowScroll extends StatefulWidget {
 
 class _ChipRowScrollState extends State<ChipRowScroll> {
   late final ScrollController _controller;
-  late final List<GlobalKey> _keys;
+  late List<GlobalKey> _keys;
 
   @override
   void initState() {
@@ -333,6 +337,9 @@ class _ChipRowScrollState extends State<ChipRowScroll> {
   @override
   void didUpdateWidget(covariant ChipRowScroll oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.options.length != oldWidget.options.length) {
+      _keys = List.generate(widget.options.length, (_) => GlobalKey());
+    }
     if (widget.selected != null && widget.selected != oldWidget.selected) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToIndex(widget.selected!);
@@ -850,11 +857,10 @@ class _CurrentPlayersList extends StatelessWidget {
                         ? NetworkImage(players[i].imageUrl!)
                         : null,
                     child: i >= players.length
-                        ? SvgPicture.asset(
-                            "assets/icons/Plus1.svg",
-                            height: defaultPadding * 1.5,
-                            colorFilter: const ColorFilter.mode(
-                                whiteColor, BlendMode.srcIn),
+                        ? Icon(
+                            LucideIcons.plus,
+                            size: defaultPadding * 1.5,
+                            color: whiteColor,
                           )
                         : null,
                   ),

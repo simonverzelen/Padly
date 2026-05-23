@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/route/screen_export.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,7 +46,14 @@ class _SelectLanguageScreenState extends State<SelectLanguageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = Navigator.canPop(context);
     return Scaffold(
+      appBar: canPop
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+            )
+          : null,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(defaultPadding),
@@ -111,16 +118,7 @@ class _SelectLanguageScreenState extends State<SelectLanguageScreen> {
                                   color: primaryColor,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Transform.scale(
-                                  scale: 0.7,
-                                  child: SvgPicture.asset(
-                                    "assets/icons/Singlecheck.svg",
-                                    colorFilter: const ColorFilter.mode(
-                                      backgroundColor,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
+                                child: const Icon(LucideIcons.check, size: 16, color: backgroundColor),
                               ),
                           ],
                         ),
@@ -129,12 +127,13 @@ class _SelectLanguageScreenState extends State<SelectLanguageScreen> {
                   },
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, logInScreenRoute);
-                },
-                child: const Text("Continue"),
-              ),
+              if (!canPop)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, logInScreenRoute);
+                  },
+                  child: const Text("Continue"),
+                ),
             ],
           ),
         ),

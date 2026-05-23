@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants.dart';
@@ -132,13 +132,7 @@ class _BuyFullKitState extends State<BuyFullKit> {
                               // child: Text("Get full kit"),
                               label:
                                   Text(_isCopied ? "Link Copyed" : "Copy link"),
-                              icon: SvgPicture.asset(
-                                "assets/icons/world_map.svg",
-                                colorFilter: const ColorFilter.mode(
-                                  Colors.white,
-                                  BlendMode.srcIn,
-                                ),
-                              ),
+                              icon: const Icon(LucideIcons.globe, color: Colors.white),
                             ),
                           ),
                           const SizedBox(width: defaultPadding),
@@ -149,15 +143,7 @@ class _BuyFullKitState extends State<BuyFullKit> {
                               },
                               // child: Text("Get full kit"),
                               label: const Text("Get full code"),
-                              icon: SvgPicture.asset(
-                                "assets/icons/Bag.svg",
-                                colorFilter: const ColorFilter.mode(
-                                  primaryColor,
-                                  BlendMode.srcIn,
-                                ),
-                                // height: 24,
-                                // width: 24,
-                              ),
+                              icon: const Icon(LucideIcons.shoppingBag, color: primaryColor),
                             ),
                           ),
                         ],

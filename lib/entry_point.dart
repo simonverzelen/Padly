@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/route/screen_export.dart';
 
 import 'components/bottom_navigation.dart';
@@ -24,27 +24,21 @@ class EntryPoint extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () =>
-                Navigator.pushNamed(context, findMatchScreenRoute),
-            icon: SvgPicture.asset(
-              "assets/icons/Search.svg",
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).textTheme.bodyLarge!.color!,
-                BlendMode.srcIn,
-              ),
+                Navigator.pushNamed(context, chatScreenRoute),
+            icon: Icon(
+              LucideIcons.messageCircle,
+              size: 24,
+              color: Theme.of(context).textTheme.bodyLarge!.color!,
             ),
           ),
           IconButton(
             onPressed: () {
               Navigator.pushNamed(context, notificationsScreenRoute);
             },
-            icon: SvgPicture.asset(
-              "assets/icons/Notification.svg",
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).textTheme.bodyLarge!.color!,
-                BlendMode.srcIn,
-              ),
+            icon: Icon(
+              LucideIcons.bell,
+              size: 24,
+              color: Theme.of(context).textTheme.bodyLarge!.color!,
             ),
           ),
         ],

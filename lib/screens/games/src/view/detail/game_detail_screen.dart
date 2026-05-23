@@ -1,22 +1,27 @@
 import 'package:avatar_stack/avatar_stack.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:avatar_stack/positions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:padly/components/category_button.dart';
 import 'package:padly/constants.dart';
+import 'package:padly/route/route_constants.dart';
 import 'package:padly/route/screen_export.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/game.dart';
+import '../overview/requests_overview.dart';
 import 'game_detail_viewmodel.dart';
+import 'package:padly/screens/user_info/src/domain/padly_user.dart';
 
 class GameDetailScreen extends StatelessWidget {
   final Game game;
+  final PadlyUser? initialUser;
 
   const GameDetailScreen({
     super.key,
     required this.game,
+    this.initialUser,
   });
 
   @override
@@ -24,6 +29,7 @@ class GameDetailScreen extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => GameDetailViewModel(
         game: game,
+        initialUser: initialUser,
       ),
       child: const GameDetailBody(),
     );
@@ -35,6 +41,8 @@ class GameDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<GameDetailViewModel>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -43,6 +51,61 @@ class GameDetailBody extends StatelessWidget {
         ),
         centerTitle: true,
         forceMaterialTransparency: true,
+        actions: [
+          if (vm.isOwner)
+            PopupMenuButton<String>(
+              color: cardBackgroundColor,
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  Navigator.pushNamed(
+                    context,
+                    createGameScreenRoute,
+                    arguments: {'game': vm.game},
+                  );
+                } else if (value == 'delete') {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      backgroundColor: cardBackgroundColor,
+                      title: const Text('Match verwijderen'),
+                      content: const Text(
+                          'Ben je zeker dat je deze match wil verwijderen?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Annuleren'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text(
+                            'Verwijderen',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true && context.mounted) {
+                    final success = await vm.deleteGame();
+                    if (success && context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, entryPointScreenRoute, (_) => false);
+                    }
+                  }
+                }
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'edit', child: Text('Aanpassen')),
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    'Verwijderen',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
       body: const CustomScrollView(
         slivers: [
@@ -59,32 +122,56 @@ class GameDetailBody extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(defaultPadding),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32)),
+      bottomNavigationBar: (vm.isLoading || vm.isOwner)
+          ? const SizedBox.shrink()
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(defaultPadding),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: vm.isInMatch
+                      ? ElevatedButton(
+                          onPressed: null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade700,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(32)),
+                          ),
+                          child: const Text('Je bent al lid'),
+                        )
+                      : vm.hasRequested
+                          ? ElevatedButton(
+                              onPressed: vm.isActionLoading
+                                  ? null
+                                  : () => vm.cancelRequest(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade700,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(32)),
+                              ),
+                              child: const Text('Verzoek annuleren'),
+                            )
+                          : ElevatedButton(
+                              onPressed: vm.isActionLoading
+                                  ? null
+                                  : () => vm.requestToJoin(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.black,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(32)),
+                              ),
+                              child: const Text('Deelnemen'),
+                            ),
+                ),
               ),
-              // TODO: implement actual join-game logic
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Functie komt binnenkort beschikbaar'),
-                  ),
-                );
-              },
-              child: const Text('Deelnemen'),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -139,12 +226,8 @@ class _Location extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        SvgPicture.asset(
-                          "assets/icons/Location.svg",
-                          height: 14,
-                          colorFilter: ColorFilter.mode(
-                              Colors.grey.shade500, BlendMode.srcIn),
-                        ),
+                        Icon(LucideIcons.mapPin,
+                            size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: defaultPadding / 2),
                         Text(
                           game.location ?? '',
@@ -165,12 +248,8 @@ class _Location extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        SvgPicture.asset(
-                          "assets/icons/Clock.svg",
-                          height: 14,
-                          colorFilter: ColorFilter.mode(
-                              Colors.grey.shade500, BlendMode.srcIn),
-                        ),
+                        Icon(LucideIcons.clock,
+                            size: 14, color: Colors.grey.shade500),
                         const SizedBox(width: defaultPadding / 2),
                         Text(
                           "${game.date != null ? DateFormat('EEE d MMM').format(game.date!) : ''} - $startTime",
@@ -189,7 +268,7 @@ class _Location extends StatelessWidget {
                     ),
                   ],
                 ),
-                Spacer(),
+                const Spacer(),
                 Container(
                   decoration: BoxDecoration(
                     color: (game.lat != null && game.lng != null)
@@ -207,14 +286,8 @@ class _Location extends StatelessWidget {
                               label: game.club ?? '',
                             )
                         : null,
-                    icon: SvgPicture.asset(
-                      "assets/icons/Location.svg",
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        blackColor,
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                    icon: const Icon(LucideIcons.mapPin,
+                        size: 24, color: blackColor),
                   ),
                 )
               ],
@@ -274,8 +347,16 @@ class _RequestPlayers extends StatelessWidget {
     final vm = context.watch<GameDetailViewModel>();
     final game = vm.game;
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, gameRequestsScreenRoute,
-          arguments: game.currentPlayers),
+      onTap: () => Navigator.pushNamed(
+        context,
+        gameRequestsScreenRoute,
+        arguments: GameRequestsArgs(
+          gameId: game.id ?? '',
+          requests: game.joinRequests ?? [],
+          currentPlayers: game.currentPlayers ?? [],
+          isOwner: vm.isOwner,
+        ),
+      ),
       child: Card(
         color: cardBackgroundColor,
         shape: RoundedRectangleBorder(
@@ -323,7 +404,7 @@ class _RequestPlayers extends StatelessWidget {
                 ],
               ),
               const Icon(
-                Icons.chevron_right,
+                LucideIcons.chevronRight,
                 size: defaultPadding * 2,
               )
             ],
@@ -343,6 +424,7 @@ class _PlayerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final requests = game.joinRequests ?? [];
     final settings = RestrictedPositions(
       maxCoverage: 0.4,
       minCoverage: 0.25,
@@ -353,19 +435,19 @@ class _PlayerList extends StatelessWidget {
       child: WidgetStack(
         positions: settings,
         stackedWidgets: [
-          for (int i = (game.currentPlayers ?? []).length - 1; i >= 0; i--)
+          for (int i = requests.length - 1; i >= 0; i--)
             Container(
               padding: const EdgeInsets.all(defaultPadding / 8),
               decoration: const BoxDecoration(
-                color: whiteColor80, // Border color
+                color: whiteColor80,
                 shape: BoxShape.circle,
               ),
               child: CircleAvatar(
                 radius: 24,
                 backgroundColor: pillBackgroundColor,
-                backgroundImage: i < (game.currentPlayers ?? []).length &&
-                        (game.currentPlayers ?? [])[i].imageUrl != null
-                    ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
+                backgroundImage: i < requests.length &&
+                        requests[i].imageUrl != null
+                    ? NetworkImage(requests[i].imageUrl!)
                     : null,
               ),
             )
@@ -427,6 +509,7 @@ class _CurrentPlayersList extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<GameDetailViewModel>();
     final game = vm.game;
+    final players = game.currentPlayers ?? [];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,26 +519,77 @@ class _CurrentPlayersList extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(defaultPadding / 8),
-                decoration: BoxDecoration(
-                  color: i < (game.currentPlayers ?? []).length
-                      ? whiteColor80
-                      : null, // Border color
-                  shape: BoxShape.circle,
-                ),
-                child: CircleAvatar(
-                  radius: 36,
-                  backgroundColor: pillBackgroundColor,
-                  backgroundImage: i < (game.currentPlayers ?? []).length &&
-                          (game.currentPlayers ?? [])[i].imageUrl != null
-                      ? NetworkImage((game.currentPlayers ?? [])[i].imageUrl!)
-                      : null,
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(defaultPadding / 8),
+                    decoration: BoxDecoration(
+                      color: i < players.length ? whiteColor80 : null,
+                      shape: BoxShape.circle,
+                    ),
+                    child: CircleAvatar(
+                      radius: 36,
+                      backgroundColor: pillBackgroundColor,
+                      backgroundImage: i < players.length &&
+                              players[i].imageUrl != null
+                          ? NetworkImage(players[i].imageUrl!)
+                          : null,
+                    ),
+                  ),
+                  if (vm.isOwner &&
+                      i < players.length &&
+                      players[i].id != game.hostPlayer?.id)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final player = players[i];
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              backgroundColor: cardBackgroundColor,
+                              title: const Text('Speler verwijderen'),
+                              content: Text(
+                                  'Ben je zeker dat je ${player.firstName ?? 'deze speler'} wil verwijderen?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Annuleren'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'Verwijderen',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) {
+                            vm.removePlayer(player);
+                          }
+                        },
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.x,
+                              size: 12, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              if (i < (game.currentPlayers ?? []).length) ...[
+              if (i < players.length) ...[
                 const SizedBox(height: defaultPadding / 4),
-                Text((game.currentPlayers ?? [])[i].firstName ?? '',
+                Text(players[i].firstName ?? '',
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall!
@@ -472,7 +606,7 @@ class _CurrentPlayersList extends StatelessWidget {
                       side: const BorderSide(color: Colors.transparent),
                     ),
                     label: Text(
-                      (game.currentPlayers ?? [])[i].rank ?? '',
+                      players[i].rank ?? '',
                       style: Theme.of(context).textTheme.labelSmall!.copyWith(
                             color: backgroundColor,
                             fontWeight: FontWeight.w700,
@@ -508,14 +642,14 @@ class _Buttons extends StatelessWidget {
         children: [
           CategoryButton(
             text: "Open Chat",
-            svgSrc: "assets/icons/Chat.svg",
+            icon: LucideIcons.messageCircle,
             press: () => {},
             isActive: true,
           ),
           const SizedBox(width: defaultPadding),
           CategoryButton(
             text: "Voeg Toe Aan Kalender",
-            svgSrc: "assets/icons/Calender.svg",
+            icon: LucideIcons.calendar,
             press: () => {},
             isActive: false,
           ),

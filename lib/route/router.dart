@@ -7,6 +7,8 @@ import 'package:padly/screens/user_info/src/domain/user_service.dart';
 
 import '../screens/auth/views/password_recovery.dart';
 import '../screens/games/src/view/overview/add_players_overview.dart';
+import '../screens/onbording/views/select_sports_screen.dart';
+import '../screens/onbording/views/select_levels_screen.dart';
 import '../screens/games/src/view/overview/find_match_screen.dart';
 import '../screens/games/src/view/overview/requests_overview.dart';
 import '../screens/games/src/view/detail/search_club_screen.dart';
@@ -190,6 +192,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
     case createGameScreenRoute:
+      final createArgs = settings.arguments as Map<String, dynamic>? ?? {};
+      final Game? initialGame = createArgs['game'] as Game?;
       return MaterialPageRoute(
         builder: (context) => Stack(
           children: [
@@ -199,7 +203,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
                 fit: BoxFit.cover,
               ),
             ),
-            const CreateMatchScreen(),
+            CreateMatchScreen(initialGame: initialGame),
           ],
         ),
       );
@@ -255,6 +259,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       final args = settings.arguments;
       final Game? game =
           (args is Map<String, dynamic>) ? args['game'] as Game? : null;
+      final PadlyUser? initialUser =
+          (args is Map<String, dynamic>) ? args['currentUser'] as PadlyUser? : null;
 
       if (game == null) {
         return MaterialPageRoute(
@@ -280,11 +286,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             ),
             GameDetailScreen(
               game: game,
+              initialUser: initialUser,
             ),
           ],
         ),
       );
     case gameRequestsScreenRoute:
+      final requestArgs = settings.arguments as GameRequestsArgs;
       return MaterialPageRoute(
         builder: (context) => Stack(
           children: [
@@ -294,9 +302,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
                 fit: BoxFit.cover,
               ),
             ),
-            RequestsOverview(
-              requests: settings.arguments as List<PadlyUser>? ?? [],
-            ),
+            RequestsOverview(args: requestArgs),
           ],
         ),
       );
@@ -351,6 +357,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const NotificationsScreen(),
       );
+    case locationPermissionScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const LocationPermissionScreen(),
+      );
     case noNotificationScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const NoNotificationScreen(),
@@ -400,6 +410,36 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               ),
             ),
             const FindMatchScreen(),
+          ],
+        ),
+      );
+    case selectSportsScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SelectSportsScreen(),
+          ],
+        ),
+      );
+    case selectLevelsScreenRoute:
+      final selectedSports =
+          settings.arguments as List<String>? ?? const [];
+      return MaterialPageRoute(
+        builder: (context) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            SelectLevelsScreen(selectedSports: selectedSports),
           ],
         ),
       );

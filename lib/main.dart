@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -14,6 +16,8 @@ import 'package:padly/screens/user_info/src/domain/user_service.dart';
 import 'package:padly/theme/app_theme.dart';
 import 'package:padly/utils/seed_mock_users.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:padly/screens/games/src/data/sports_repository.dart';
 
 import 'config/env.dart';
 
@@ -42,6 +46,9 @@ Future<void> main() async {
     url: Env.supabaseUrl,
     anonKey: Env.supabaseAnonKey,
   );
+
+  // Pre-warm the sports cache so all screens get instant data.
+  unawaited(SportsRepository.instance.getSports());
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -124,7 +131,10 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final PadlyUser? userInfo;
-  const MyApp({super.key, required this.userInfo});
+  const MyApp({
+    super.key,
+    required this.userInfo,
+  });
 
   // This widget is the root of your application.
   @override
@@ -132,7 +142,9 @@ class MyApp extends StatelessWidget {
     final currentUser = FirebaseAuth.instance.currentUser;
     final route = currentUser != null
         ? userInfo?.firstName != null && userInfo?.lastName != null
-            ? entryPointScreenRoute
+            ? (userInfo?.selectedSports?.isNotEmpty == true)
+                ? entryPointScreenRoute
+                : selectSportsScreenRoute
             : onbordingScreenRoute
         : notificationPermissionScreenRoute;
 

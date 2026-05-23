@@ -28,7 +28,7 @@ class GamesGateway {
     }
   }
 
-  Future<List<Game>?> fethSupabaseGames() async {
+  Future<List<Game>?> fethSupabaseGames({String sport = 'Padel'}) async {
     try {
       // NOTE: lat/lng are hardcoded for now (Kortrijk, Belgium).
       // TODO: replace with the user's actual device location.
@@ -42,6 +42,7 @@ class GamesGateway {
         'end_time': null,
         'sort_by': 'price', //distance, ranking, price, start_time, endt_time,
         'sort_direction': 'asc',
+        'sport_name': sport,
       });
 
       final data = response as List<dynamic>;
@@ -51,7 +52,6 @@ class GamesGateway {
       );
       return games;
     } catch (e) {
-      print("Supabase error: $e");
       return null;
     }
   }
@@ -71,5 +71,84 @@ class GamesGateway {
     } catch (e) {
       throw Exception('Game aanmaken mislukt: $e');
     }
+  }
+
+  Future<void> requestToJoin(
+    String gameId,
+    Map<String, dynamic> userJson,
+  ) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase.rpc('request_to_join', params: {
+      'game_id': gameId,
+      'user_json': userJson,
+    });
+  }
+
+  Future<void> cancelJoinRequest(
+    String gameId,
+    String userId,
+  ) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase.rpc('cancel_join_request', params: {
+      'game_id': gameId,
+      'user_id': userId,
+    });
+  }
+
+  Future<void> updateJoinRequests(
+    String gameId,
+    List<Map<String, dynamic>> newRequests,
+  ) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase
+        .from('games')
+        .update({'join_requests': newRequests})
+        .eq('id', gameId);
+  }
+
+  Future<void> acceptRequest(
+    String gameId,
+    List<Map<String, dynamic>> newCurrentPlayers,
+    List<Map<String, dynamic>> newJoinRequests,
+  ) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase.from('games').update({
+      'current_players': newCurrentPlayers,
+      'join_requests': newJoinRequests,
+    }).eq('id', gameId);
+  }
+
+  Future<void> removePlayer(
+    String gameId,
+    List<Map<String, dynamic>> newCurrentPlayers,
+  ) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase
+        .from('games')
+        .update({'current_players': newCurrentPlayers})
+        .eq('id', gameId);
+  }
+
+  Future<void> updateGame(String gameId, GameCreate game) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase
+        .from('games')
+        .update(game.toInsertJson())
+        .eq('id', gameId);
+  }
+
+  Future<void> deleteGame(String gameId) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    await supabase.from('games').delete().eq('id', gameId);
+  }
+
+  Future<Game?> fetchGame(String gameId) async {
+    await authBridge.signInToSupabaseWithFirebase();
+    final row = await supabase
+        .from('games')
+        .select()
+        .eq('id', gameId)
+        .single();
+    return Game.fromJson(row);
   }
 }

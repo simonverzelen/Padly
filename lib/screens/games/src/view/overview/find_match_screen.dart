@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:provider/provider.dart';
 import 'find_match_viewmodel.dart';
@@ -20,12 +20,7 @@ class FindMatchScreen extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
             backgroundColor: Colors.transparent,
             leading: IconButton(
-              icon: SvgPicture.asset(
-                "assets/icons/Arrow - Left.svg",
-                height: 24,
-                colorFilter:
-                    const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-              ),
+              icon: const Icon(LucideIcons.arrowLeft, size: 24, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
             centerTitle: true,
@@ -90,12 +85,7 @@ class FindMatchScreen extends StatelessWidget {
                         .titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  SvgPicture.asset(
-                    "assets/icons/Filter.svg",
-                    height: 24,
-                    colorFilter: const ColorFilter.mode(
-                        Colors.white, BlendMode.srcIn),
-                  ),
+                  const Icon(LucideIcons.slidersHorizontal, size: 24, color: Colors.white),
                 ],
               ),
             ),
@@ -194,7 +184,7 @@ class _FilterChip extends StatelessWidget {
           if (hasDropdown) ...[
             const SizedBox(width: 4),
             Icon(
-              Icons.keyboard_arrow_down,
+              LucideIcons.chevronDown,
               size: 16,
               color: isActive ? backgroundColor : primaryColor,
             ),

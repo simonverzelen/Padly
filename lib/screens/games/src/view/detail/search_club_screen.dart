@@ -1,5 +1,6 @@
 // ui/zoek_club_screen.dart
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:provider/provider.dart';
 import '../../data/google_maps_repo.dart';
@@ -202,9 +203,9 @@ class LocationCard extends StatelessWidget {
         child: Row(
           children: [
             if (recent) ...[
-              const Icon(Icons.history, color: Colors.white60)
+              const Icon(LucideIcons.history, color: Colors.white60)
             ] else ...[
-              const Icon(Icons.location_on_outlined, color: Colors.white60)
+              const Icon(LucideIcons.mapPin, color: Colors.white60)
             ],
             const SizedBox(width: defaultPadding),
             Expanded(
@@ -231,7 +232,7 @@ class LocationCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: defaultPadding),
-            const Icon(Icons.chevron_right, color: whiteColor),
+            const Icon(LucideIcons.chevronRight, color: whiteColor),
           ],
         ),
       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class DividerListTile extends StatelessWidget {
   const DividerListTile({
@@ -27,11 +27,10 @@ class DividerListTile extends StatelessWidget {
           onTap: press,
           title: title,
           trailing: isShowForwordArrow
-              ? SvgPicture.asset(
-                  "assets/icons/miniRight.svg",
-                  colorFilter: ColorFilter.mode(
-                      Theme.of(context).iconTheme.color!.withOpacity(0.4),
-                      BlendMode.srcIn),
+              ? Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: Theme.of(context).iconTheme.color!.withValues(alpha: 0.4),
                 )
               : null,
         ),
@@ -44,14 +43,15 @@ class DividerListTile extends StatelessWidget {
 class DividerListTileWithTrilingText extends StatelessWidget {
   const DividerListTileWithTrilingText({
     super.key,
-    required this.svgSrc,
+    required this.icon,
     required this.title,
     required this.trilingText,
     required this.press,
     this.isShowArrow = true,
   });
 
-  final String svgSrc, title, trilingText;
+  final IconData icon;
+  final String title, trilingText;
   final VoidCallback press;
   final bool isShowArrow;
 
@@ -62,12 +62,10 @@ class DividerListTileWithTrilingText extends StatelessWidget {
         ListTile(
           onTap: press,
           minLeadingWidth: 24,
-          leading: SvgPicture.asset(
-            svgSrc,
-            height: 24,
-            width: 24,
-            colorFilter: ColorFilter.mode(
-                Theme.of(context).iconTheme.color!, BlendMode.srcIn),
+          leading: Icon(
+            icon,
+            size: 24,
+            color: Theme.of(context).iconTheme.color!,
           ),
           title: Text(
             title,
@@ -79,11 +77,10 @@ class DividerListTileWithTrilingText extends StatelessWidget {
               children: [
                 const Spacer(),
                 Text(trilingText),
-                SvgPicture.asset(
-                  "assets/icons/miniRight.svg",
-                  colorFilter: ColorFilter.mode(
-                      Theme.of(context).iconTheme.color!.withOpacity(0.4),
-                      BlendMode.srcIn),
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 16,
+                  color: Theme.of(context).iconTheme.color!.withValues(alpha: 0.4),
                 ),
               ],
             ),

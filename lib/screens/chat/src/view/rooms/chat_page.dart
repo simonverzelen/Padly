@@ -3,6 +3,7 @@ import 'dart:io';
 // import 'package:file_picker/file_picker.dart';
 // import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -227,7 +228,7 @@ class _ChatPageState extends State<ChatPage> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(LucideIcons.arrowLeft),
             onPressed: () => Navigator.pop(context),
           ),
           systemOverlayStyle: SystemUiOverlayStyle.dark,

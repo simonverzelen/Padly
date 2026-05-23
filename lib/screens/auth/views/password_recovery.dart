@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/route/route_constants.dart';
 import 'package:padly/screens/auth/domain/auth_service.dart';
@@ -61,17 +61,14 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                             prefixIcon: Padding(
                               padding: const EdgeInsets.symmetric(
                                   vertical: defaultPadding * 0.75),
-                              child: SvgPicture.asset(
-                                "assets/icons/Message.svg",
-                                height: 24,
-                                width: 24,
-                                colorFilter: ColorFilter.mode(
-                                    Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .color!
-                                        .withOpacity(0.3),
-                                    BlendMode.srcIn),
+                              child: Icon(
+                                LucideIcons.mail,
+                                size: 24,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .color!
+                                    .withOpacity(0.3),
                               ),
                             ),
                           ),

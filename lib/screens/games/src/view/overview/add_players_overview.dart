@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/screens/user_info/src/domain/user_service.dart';
 import 'package:provider/provider.dart';
@@ -273,12 +273,7 @@ class RequestCard extends StatelessWidget {
                   backgroundColor: pillBackgroundColor,
                   foregroundImage: image,
                   child: image == null
-                      ? SvgPicture.asset(
-                          "assets/icons/Profile.svg",
-                          height: defaultPadding * 1.5,
-                          colorFilter: const ColorFilter.mode(
-                              whiteColor, BlendMode.srcIn),
-                        )
+                      ? const Icon(LucideIcons.user, size: 24, color: whiteColor)
                       : null,
                 ),
               ),
@@ -316,18 +311,9 @@ class RequestCard extends StatelessWidget {
                         ),
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: Transform.scale(
-                        scale: 0.7,
-                        child: isSelected
-                            ? SvgPicture.asset(
-                                "assets/icons/Singlecheck.svg",
-                                colorFilter: const ColorFilter.mode(
-                                  backgroundColor,
-                                  BlendMode.srcIn,
-                                ),
-                              )
-                            : null,
-                      ),
+                      child: isSelected
+                          ? const Icon(LucideIcons.check, size: 18, color: backgroundColor)
+                          : null,
                     ),
             ),
           ],

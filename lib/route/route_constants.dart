@@ -24,3 +24,6 @@ const String gameRequestsScreenRoute = "game_requests";
 const String searchClubScreenRoute = "search_club";
 const String addPlayersScreenRoute = "add_players";
 const String findMatchScreenRoute = "find_match";
+const String selectSportsScreenRoute = "select_sports";
+const String selectLevelsScreenRoute = "select_levels";
+const String locationPermissionScreenRoute = "location_permission";

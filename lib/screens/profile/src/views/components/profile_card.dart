@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/components/network_image_with_loader.dart';
 
 import '../../../../../constants.dart';
@@ -67,10 +67,7 @@ class ProfileCard extends StatelessWidget {
       ),
       subtitle: Text(email),
       trailing: isShowArrow
-          ? SvgPicture.asset(
-              "assets/icons/miniRight.svg",
-              color: Theme.of(context).iconTheme.color!.withOpacity(0.4),
-            )
+          ? Icon(LucideIcons.chevronRight, size: 16, color: Theme.of(context).iconTheme.color!.withOpacity(0.4))
           : null,
     );
   }

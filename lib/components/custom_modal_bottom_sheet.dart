@@ -14,11 +14,11 @@ Future<dynamic> customModalBottomSheet(
     isScrollControlled: true,
     isDismissible: isDismissible,
     enableDrag: isDismissible,
-    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    backgroundColor: backgroundColor,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(defaultBorderRadious * 2),
-        topRight: Radius.circular(defaultBorderRadious * 2),
+        topLeft: Radius.circular(defaultBorderRadious / 2),
+        topRight: Radius.circular(defaultBorderRadious / 2),
       ),
     ),
     builder: (context) => SizedBox(

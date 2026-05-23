@@ -1,53 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/route/screen_export.dart';
 import 'package:padly/screens/games/games.dart';
+import 'package:padly/screens/user_info/src/domain/padly_user.dart';
+import 'package:provider/provider.dart';
+import 'games_overview_viewmodel.dart';
 
 class GameCard extends StatelessWidget {
   final Game game;
+  final PadlyUser? currentUser;
 
   const GameCard({
     super.key,
     required this.game,
+    this.currentUser,
   });
 
   @override
   Widget build(BuildContext context) {
     final String gameRank =
         '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
-    final startDate = game.date != null
-        ? DateFormat('EEE d MMM').format(game.date!)
-        : '';
+    final startDate =
+        game.date != null ? DateFormat('EEE d MMM').format(game.date!) : '';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
 
-    return Card(
-      color: cardBackgroundColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(defaultBorderRadious / 2),
-      ),
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(
-        horizontal: defaultPadding / 2,
-        vertical: defaultPadding,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            vertical: defaultPadding / 2, horizontal: defaultPadding),
-        child: Column(
-          children: [
-            _GameInfoChips(
-              startDate: startDate,
-              startTime: startTime,
-              gameRank: gameRank,
-            ),
-            const SizedBox(height: defaultPadding / 2),
-            _GameCardBody(game: game),
-            const SizedBox(height: defaultPadding / 2),
-            _GameCardFooter(game: game),
-          ],
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.pushNamed(
+          context,
+          gameDetailScreenRoute,
+          arguments: {'game': game, 'currentUser': currentUser},
+        );
+        if (context.mounted) {
+          context.read<GamesOverviewViewmodel>().refresh();
+        }
+      },
+      child: Card(
+        color: cardBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(defaultBorderRadious / 2),
+        ),
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(
+          horizontal: defaultPadding / 2,
+          vertical: defaultPadding,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              vertical: defaultPadding / 2, horizontal: defaultPadding),
+          child: Column(
+            children: [
+              _GameInfoChips(
+                startDate: startDate,
+                startTime: startTime,
+                gameRank: gameRank,
+              ),
+              const SizedBox(height: defaultPadding / 2),
+              _GameCardBody(game: game),
+            ],
+          ),
         ),
       ),
     );
@@ -56,48 +70,59 @@ class GameCard extends StatelessWidget {
 
 class GameCardFeatured extends StatelessWidget {
   final Game game;
+  final PadlyUser? currentUser;
 
   const GameCardFeatured({
     super.key,
     required this.game,
+    this.currentUser,
   });
 
   @override
   Widget build(BuildContext context) {
     final String gameRank =
         '${game.rankingMin ?? '-'} - ${game.rankingMax ?? '-'}';
-    final startDate = game.date != null
-        ? DateFormat('EEE d MMM').format(game.date!)
-        : '';
+    final startDate =
+        game.date != null ? DateFormat('EEE d MMM').format(game.date!) : '';
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
 
-    return Card(
-      color: cardFeaturedBackgroundColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(defaultBorderRadious / 2),
-      ),
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(
-        horizontal: defaultPadding / 2,
-        vertical: defaultPadding,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            vertical: defaultPadding / 2, horizontal: defaultPadding),
-        child: Column(
-          children: [
-            _GameInfoChips(
-              startDate: startDate,
-              startTime: startTime,
-              gameRank: gameRank,
-              isDense: true,
-            ),
-            const SizedBox(height: defaultPadding / 2),
-            _GameCardBody(game: game, isDense: true),
-            const SizedBox(height: defaultPadding / 2),
-            _GameCardFooter(game: game, isDense: true),
-          ],
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.pushNamed(
+          context,
+          gameDetailScreenRoute,
+          arguments: {'game': game, 'currentUser': currentUser},
+        );
+        if (context.mounted) {
+          context.read<GamesOverviewViewmodel>().refresh();
+        }
+      },
+      child: Card(
+        color: cardFeaturedBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(defaultBorderRadious / 2),
+        ),
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(
+          horizontal: defaultPadding / 2,
+          vertical: defaultPadding,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              vertical: defaultPadding / 2, horizontal: defaultPadding),
+          child: Column(
+            children: [
+              _GameInfoChips(
+                startDate: startDate,
+                startTime: startTime,
+                gameRank: gameRank,
+                isDense: true,
+              ),
+              const SizedBox(height: defaultPadding / 2),
+              _GameCardBody(game: game, isDense: true),
+            ],
+          ),
         ),
       ),
     );
@@ -175,10 +200,9 @@ class _LocationInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final startTime =
         game.startTime != null ? DateFormat.Hm().format(game.startTime!) : '';
-    final String playTime =
-        (game.endTime != null && game.startTime != null)
-            ? '${game.endTime!.difference(game.startTime!).inMinutes}'
-            : '-';
+    final String playTime = (game.endTime != null && game.startTime != null)
+        ? '${game.endTime!.difference(game.startTime!).inMinutes}'
+        : '-';
 
     return isDense
         ? Wrap(
@@ -231,12 +255,8 @@ class _LocationInfo extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SvgPicture.asset(
-                    "assets/icons/Location.svg",
-                    height: 14,
-                    colorFilter:
-                        ColorFilter.mode(Colors.grey.shade500, BlendMode.srcIn),
-                  ),
+                  Icon(LucideIcons.mapPin,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: defaultPadding / 2),
                   Flexible(
                     child: Text(
@@ -260,12 +280,8 @@ class _LocationInfo extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SvgPicture.asset(
-                    "assets/icons/Clock.svg",
-                    height: 14,
-                    colorFilter:
-                        ColorFilter.mode(Colors.grey.shade500, BlendMode.srcIn),
-                  ),
+                  Icon(LucideIcons.clock,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: defaultPadding / 2),
                   Text(
                     startTime,
@@ -285,12 +301,8 @@ class _LocationInfo extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SvgPicture.asset(
-                    "assets/icons/Cash.svg",
-                    height: 14,
-                    colorFilter:
-                        ColorFilter.mode(Colors.grey.shade500, BlendMode.srcIn),
-                  ),
+                  Icon(LucideIcons.banknote,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: defaultPadding / 2),
                   Text(
                     '€ ${game.pricePerHour}',
@@ -418,87 +430,6 @@ class _PlayerList extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-class _GameCardFooter extends StatelessWidget {
-  final Game game;
-  final bool isDense;
-
-  const _GameCardFooter({
-    required this.game,
-    this.isDense = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Flex(
-      direction: Axis.horizontal,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.grey.shade300,
-          backgroundImage:
-              game.hostPlayer != null && game.hostPlayer!.imageUrl != null
-                  ? NetworkImage(game.hostPlayer!.imageUrl!)
-                  : null,
-        ),
-        const SizedBox(width: defaultPadding / 2),
-        isDense
-            ? const SizedBox.shrink()
-            : Text(
-                game.hostPlayer != null
-                    ? game.hostPlayer!.fullName ?? ''
-                    : 'Host Player',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-        //if (isDense)
-        isDense ? const SizedBox(width: defaultPadding * 4) : const Spacer(),
-        Expanded(
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(defaultPadding / 1.5),
-            ),
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                gameDetailScreenRoute,
-                arguments: {
-                  'game': game,
-                },
-              );
-            },
-            child: const Text("Deelnemen"),
-          ),
-        )
-
-        /*] else
-          InkWell(
-            onTap: () {
-              Navigator.pushNamed(context, gameDetailScreenRoute);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'Deelnemen',
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: primaryColor,
-                      ),
-                ),
-                const SizedBox(width: defaultPadding / 2),
-                SvgPicture.asset(
-                  "assets/icons/Arrow - Right.svg",
-                  height: 20,
-                  colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
-                ),
-              ],
-            ),
-          )*/
-      ],
     );
   }
 }

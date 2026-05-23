@@ -54,6 +54,7 @@ dependencies:
   flutter_dotenv: ^6.0.0
   glassmorphism: ^3.0.0
   flutter_native_splash: ^2.4.6
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:

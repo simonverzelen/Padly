@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:padly/constants.dart';
@@ -94,7 +94,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
         centerTitle: true,
         leading: widget.isEditable
             ? IconButton(
-                icon: Icon(Icons.arrow_back),
+                icon: Icon(LucideIcons.arrowLeft),
                 onPressed: () => Navigator.pop(context),
               )
             : null,
@@ -115,7 +115,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                           ? FileImage(_profileImage!)
                           : null,
                       child: _profileImage == null
-                          ? Icon(Icons.person, size: 50, color: Colors.grey)
+                          ? Icon(LucideIcons.user, size: 50, color: Colors.grey)
                           : null,
                       backgroundColor: cardBackgroundColor,
                     ),
@@ -141,7 +141,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         ),
                         child: IconButton(
                           icon: Icon(
-                            Icons.camera_alt,
+                            LucideIcons.camera,
                             color: backgroundColor,
                             size: 19,
                           ),
@@ -193,17 +193,14 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                               prefixIcon: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     vertical: defaultPadding * 0.75),
-                                child: SvgPicture.asset(
-                                  "assets/icons/Calender.svg",
-                                  height: 24,
-                                  width: 24,
-                                  colorFilter: ColorFilter.mode(
-                                      Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .color!
-                                          .withOpacity(0.3),
-                                      BlendMode.srcIn),
+                                child: Icon(
+                                  LucideIcons.calendar,
+                                  size: 24,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .color!
+                                      .withOpacity(0.3),
                                 ),
                               ),
                             ),
@@ -233,7 +230,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       child: _GenderOption(
                         label: "Male",
                         isSelected: _gender == "Male",
-                        icon: Icons.male,
+                        icon: LucideIcons.user,
                         onTap: () => _changeGender("Male"),
                       ),
                     ),
@@ -242,7 +239,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                       child: _GenderOption(
                         label: "Female",
                         isSelected: _gender == "Female",
-                        icon: Icons.female,
+                        icon: LucideIcons.userCircle,
                         onTap: () => _changeGender("Female"),
                       ),
                     ),
@@ -277,7 +274,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                         await _userService.saveImageUrlToFirestore(downloadUrl);
                       }
 
-                      Navigator.pushNamed(context, entryPointScreenRoute);
+                      Navigator.pushNamed(context, selectSportsScreenRoute);
                     }
                   },
                   child: const Text("Continue"),
@@ -373,16 +370,7 @@ class _GenderOption extends StatelessWidget {
                   color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Transform.scale(
-                  scale: 0.7,
-                  child: SvgPicture.asset(
-                    "assets/icons/Singlecheck.svg",
-                    colorFilter: ColorFilter.mode(
-                      backgroundColor,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
+                child: const Icon(LucideIcons.check, size: 16, color: backgroundColor),
               ),
           ],
         ),

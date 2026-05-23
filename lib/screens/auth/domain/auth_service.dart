@@ -5,6 +5,9 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:padly/route/screen_export.dart';
+import 'package:padly/screens/games/src/data/recent_clubs_cache.dart';
+import 'package:padly/screens/games/src/data/recent_players_cache.dart';
+import 'package:padly/screens/games/src/data/user_preferences_cache.dart';
 import 'package:padly/services/supabase_firebase_auth_bridge.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -141,6 +144,9 @@ class AuthService {
   }
 
   Future<void> signout({required BuildContext context}) async {
+    await UserPreferencesCache().clear();
+    await RecentPlayersCache().clear();
+    await RecentClubsCache().clear();
     await FirebaseAuth.instance.signOut();
     if (!context.mounted) return;
     Navigator.pushNamed(

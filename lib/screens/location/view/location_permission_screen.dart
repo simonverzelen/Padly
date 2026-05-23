@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -6,22 +5,23 @@ import 'package:padly/constants.dart';
 import 'package:padly/route/route_constants.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+class LocationPermissionScreen extends StatefulWidget {
+  const LocationPermissionScreen({super.key});
 
   @override
-  _NotificationsScreenState createState() => _NotificationsScreenState();
+  State<LocationPermissionScreen> createState() =>
+      _LocationPermissionScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen>
+class _LocationPermissionScreenState extends State<LocationPermissionScreen>
     with WidgetsBindingObserver {
-  bool _notificationsEnabled = false;
+  bool _locationEnabled = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkNotificationStatus();
+    _checkLocationStatus();
   }
 
   @override
@@ -33,8 +33,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _checkNotificationStatus().then((_) {
-        if (_notificationsEnabled && mounted) {
+      _checkLocationStatus().then((_) {
+        if (_locationEnabled && mounted) {
           _autoNavigate();
         }
       });
@@ -45,32 +45,33 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
     } else {
-      Navigator.pushReplacementNamed(context, locationPermissionScreenRoute);
+      Navigator.pushReplacementNamed(context, selectLanguageScreenRoute);
     }
   }
 
-  Future<void> _checkNotificationStatus() async {
-    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+  Future<void> _checkLocationStatus() async {
+    final status = await Permission.location.status;
     if (mounted) {
       setState(() {
-        _notificationsEnabled =
-            settings.authorizationStatus == AuthorizationStatus.authorized;
+        _locationEnabled = status.isGranted;
       });
     }
   }
 
   Future<void> _handleToggle(bool value) async {
-    final settings = await FirebaseMessaging.instance.getNotificationSettings();
-    final status = settings.authorizationStatus;
+    final status = await Permission.location.status;
 
-    if (status == AuthorizationStatus.notDetermined) {
-      await FirebaseMessaging.instance.requestPermission();
-      await _checkNotificationStatus();
-      if (_notificationsEnabled && mounted) {
-        _autoNavigate();
-      }
-    } else if (status == AuthorizationStatus.denied ||
-        status == AuthorizationStatus.provisional) {
+    if (status.isGranted) {
+      await openAppSettings();
+      return;
+    }
+
+    final result = await Permission.location.request();
+    await _checkLocationStatus();
+
+    if (result.isGranted && mounted) {
+      _autoNavigate();
+    } else {
       await openAppSettings();
     }
   }
@@ -91,11 +92,13 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  Image.asset(
-                    "assets/images/notification.jpg",
+                  Container(
                     height: MediaQuery.of(context).size.height * 0.35,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    color: cardBackgroundColor,
+                    child: Center(
+                      child: const Icon(LucideIcons.mapPin, size: 80, color: primaryColor),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(defaultPadding),
@@ -104,12 +107,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       children: [
                         const SizedBox(height: defaultPadding / 2),
                         Text(
-                          "Never miss a match — get notified for invites and joins.",
+                          "Find matches near you — share your location.",
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: defaultPadding / 2),
                         const Text(
-                          "Get real-time notifications when another player invites you to a match or requests to join yours.",
+                          "Allow Padly to use your location to show nearby courts and matches in your area.",
                         ),
                         const SizedBox(height: defaultPadding * 2),
                         Container(
@@ -122,11 +125,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ),
                           child: Row(
                             children: [
-                              const Icon(LucideIcons.bell, size: 24, color: Colors.white),
+                              const Icon(LucideIcons.mapPin, size: 24, color: Colors.white),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Notifications',
+                                  'Location',
                                   style:
                                       Theme.of(context).textTheme.titleMedium,
                                 ),
@@ -134,7 +137,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                               CupertinoSwitch(
                                 onChanged: _handleToggle,
                                 activeTrackColor: primaryColor,
-                                value: _notificationsEnabled,
+                                value: _locationEnabled,
                                 thumbColor: primaryMaterialColor.shade900,
                               ),
                             ],
@@ -152,7 +155,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               padding: const EdgeInsets.all(defaultPadding),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, locationPermissionScreenRoute);
+                  Navigator.pushReplacementNamed(context, selectLanguageScreenRoute);
                 },
                 child: const Text("Continue"),
               ),

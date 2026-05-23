@@ -1,13 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/entry_point.dart';
 import 'package:padly/route/screen_export.dart';
-import 'package:padly/screens/chat/src/view/rooms/chat_screen.dart';
-import 'package:padly/screens/chat/src/view/users/users_screen.dart';
 import 'package:padly/screens/games/src/view/detail/create_game_screen.dart';
 
 class BottomNavigation extends StatefulWidget {
@@ -21,14 +17,7 @@ class BottomNavigation extends StatefulWidget {
 class _BottomNavigationState extends State<BottomNavigation> {
   final List _pages = [
     EntryPoint(),
-    ChatScreen(),
     CreateMatchScreen(),
-    UsersScreen(),
-    //HomeScreen(),
-    //DiscoverScreen(),
-    //BookmarkScreen(),
-    // EmptyCartScreen(), // if Cart is empty
-    //CartScreen(),
     ProfileScreen(),
   ];
 
@@ -42,18 +31,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    SvgPicture svgIcon(String src, {Color? color}) {
-      return SvgPicture.asset(
-        src,
-        height: 24,
-        colorFilter: ColorFilter.mode(
-            color ??
-                Theme.of(context).iconTheme.color!.withOpacity(
-                    Theme.of(context).brightness == Brightness.dark ? 1 : 1),
-            BlendMode.srcIn),
-      );
-    }
-
     return GlassmorphicContainer(
       width: double.infinity,
       height: 68,
@@ -94,7 +71,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index != _currentIndex) {
-            if (index == 2) {
+            if (index == 1) {
               Navigator.pushNamed(context, createGameScreenRoute);
               return;
             }
@@ -135,7 +112,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
               ),
               margin: const EdgeInsets.all(6),
               padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Bookmark.svg", color: whiteColor),
+              child: const Icon(LucideIcons.layoutGrid, size: 24, color: whiteColor),
             ),
             activeIcon: Container(
               decoration: BoxDecoration(
@@ -144,9 +121,30 @@ class _BottomNavigationState extends State<BottomNavigation> {
               ),
               margin: const EdgeInsets.all(6),
               padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Bookmark.svg", color: primaryColor),
+              child: const Icon(LucideIcons.layoutGrid, size: 24, color: primaryColor),
             ),
-            label: "Games",
+            label: "Overzicht",
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              decoration: const BoxDecoration(
+                color: primaryColor,
+                shape: BoxShape.circle,
+              ),
+              margin: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(defaultPadding),
+              child: const Icon(LucideIcons.plus, size: 24, color: backgroundColor),
+            ),
+            activeIcon: Container(
+              decoration: const BoxDecoration(
+                color: primaryColor,
+                shape: BoxShape.circle,
+              ),
+              margin: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(defaultPadding),
+              child: const Icon(LucideIcons.plus, size: 24, color: backgroundColor),
+            ),
+            label: "Create game",
           ),
           BottomNavigationBarItem(
             icon: Container(
@@ -156,7 +154,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
               ),
               margin: const EdgeInsets.all(6),
               padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Chat.svg", color: whiteColor),
+              child: const Icon(LucideIcons.user, size: 24, color: whiteColor),
             ),
             activeIcon: Container(
               decoration: BoxDecoration(
@@ -165,78 +163,9 @@ class _BottomNavigationState extends State<BottomNavigation> {
               ),
               margin: const EdgeInsets.all(6),
               padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Chat.svg", color: primaryColor),
+              child: const Icon(LucideIcons.user, size: 24, color: primaryColor),
             ),
-            label: "Chat",
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-                decoration: const BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                margin: const EdgeInsets.all(6),
-                padding: const EdgeInsets.all(defaultPadding),
-                child: SvgPicture.asset(
-                  "assets/icons/Plus1.svg",
-                  colorFilter:
-                      const ColorFilter.mode(backgroundColor, BlendMode.srcIn),
-                )),
-            activeIcon: Container(
-                decoration: const BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                margin: const EdgeInsets.all(6),
-                padding: const EdgeInsets.all(defaultPadding),
-                child: SvgPicture.asset(
-                  "assets/icons/Plus1.svg",
-                  colorFilter:
-                      const ColorFilter.mode(backgroundColor, BlendMode.srcIn),
-                )),
-            label: "New",
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              decoration: BoxDecoration(
-                color: scrollBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              margin: const EdgeInsets.all(6),
-              padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Chat-add.svg", color: whiteColor),
-            ),
-            activeIcon: Container(
-              decoration: BoxDecoration(
-                color: cardFeaturedBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              margin: const EdgeInsets.all(6),
-              padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Chat-add.svg", color: primaryColor),
-            ),
-            label: "Users",
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              decoration: BoxDecoration(
-                color: scrollBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              margin: const EdgeInsets.all(6),
-              padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Profile.svg", color: whiteColor),
-            ),
-            activeIcon: Container(
-              decoration: BoxDecoration(
-                color: cardFeaturedBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              margin: const EdgeInsets.all(6),
-              padding: const EdgeInsets.all(defaultPadding),
-              child: svgIcon("assets/icons/Profile.svg", color: primaryColor),
-            ),
-            label: "Profile",
+            label: "Profiel",
           ),
         ],
       ),

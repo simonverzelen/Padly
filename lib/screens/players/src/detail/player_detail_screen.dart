@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/components/category_button.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
@@ -35,7 +35,7 @@ class PlayerDetailScreen extends StatelessWidget {
               children: [
                 CategoryButton(
                   text: "Open Chat",
-                  svgSrc: "assets/icons/Chat.svg",
+                  icon: LucideIcons.messageCircle,
                   press: () => {},
                   isActive: true,
                 ),
@@ -84,12 +84,7 @@ class PlayerCard extends StatelessWidget {
                 backgroundColor: pillBackgroundColor,
                 foregroundImage: image,
                 child: image == null
-                    ? SvgPicture.asset(
-                        "assets/icons/Profile.svg",
-                        height: defaultPadding * 2,
-                        colorFilter:
-                            const ColorFilter.mode(whiteColor, BlendMode.srcIn),
-                      )
+                    ? const Icon(LucideIcons.user, size: 32, color: whiteColor)
                     : null,
               ),
             ),

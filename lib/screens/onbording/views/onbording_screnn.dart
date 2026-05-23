@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/components/dot_indicators.dart';
 import 'package:padly/constants.dart';
 import 'package:padly/route/route_constants.dart';
@@ -131,13 +131,7 @@ class _OnBordingScreenState extends State<OnBordingScreen> {
                       style: ElevatedButton.styleFrom(
                         shape: const CircleBorder(),
                       ),
-                      child: SvgPicture.asset(
-                        "assets/icons/Arrow - Right.svg",
-                        colorFilter: const ColorFilter.mode(
-                          Colors.white,
-                          BlendMode.srcIn,
-                        ),
-                      ),
+                      child: const Icon(LucideIcons.arrowRight, color: Colors.white),
                     ),
                   ),
                 ],

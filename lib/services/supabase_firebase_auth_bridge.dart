@@ -86,6 +86,27 @@ class SupabaseFirebaseAuthBridge {
     }, onConflict: 'firebase_uid');
   }
 
+  Future<void> updateUserPreferences({String? sport, String? language}) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await supabase.from('profiles').update({
+      if (sport != null) 'selected_sport': sport,
+      if (language != null) 'preferred_language': language,
+    }).eq('firebase_uid', uid);
+  }
+
+  Future<void> updateSportsAndLevels({
+    required List<String> selectedSports,
+    required Map<String, String> sportLevels,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    await supabase.from('profiles').update({
+      'selected_sports': selectedSports,
+      'sport_levels': sportLevels,
+    }).eq('firebase_uid', uid);
+  }
+
   void signOut() {
     _jwt = null;
     supabase.rest.headers.remove('Authorization');

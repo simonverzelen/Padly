@@ -14,6 +14,7 @@ class GameCreate {
 
   final List<Map<String, dynamic>>? currentPlayers;
   final Map<String, dynamic>? hostPlayer;
+  final String? sportId;
 
   const GameCreate({
     required this.date,
@@ -29,6 +30,7 @@ class GameCreate {
     this.rankingMax,
     this.currentPlayers,
     this.hostPlayer,
+    this.sportId,
   });
 
   Map<String, dynamic> toInsertJson() => {
@@ -45,5 +47,6 @@ class GameCreate {
         if (rankingMax != null) 'ranking_max': rankingMax,
         if (currentPlayers != null) 'current_players': currentPlayers,
         if (hostPlayer != null) 'host_player': hostPlayer,
+        if (sportId != null) 'sport_id': sportId,
       };
 }

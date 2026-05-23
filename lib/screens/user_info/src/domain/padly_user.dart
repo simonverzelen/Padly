@@ -9,6 +9,8 @@ class PadlyUser {
   final DateTime? lastSeen;
   final String? imageUrl;
   final String? rank;
+  final List<String>? selectedSports;
+  final Map<String, String>? sportLevels;
 
   PadlyUser({
     this.id,
@@ -19,6 +21,8 @@ class PadlyUser {
     this.lastSeen,
     this.imageUrl,
     this.rank,
+    this.selectedSports,
+    this.sportLevels,
   });
 
   factory PadlyUser.fromJson(Map<String, dynamic> json) => PadlyUser(
@@ -34,6 +38,10 @@ class PadlyUser {
             : null,
         imageUrl: json["imageUrl"] as String?,
         rank: json["rank"] as String?,
+        selectedSports:
+            (json['selectedSports'] as List<dynamic>?)?.cast<String>(),
+        sportLevels: (json['sportLevels'] as Map<String, dynamic>?)
+            ?.cast<String, String>(),
       );
 
   Map<String, dynamic> toJson() => {

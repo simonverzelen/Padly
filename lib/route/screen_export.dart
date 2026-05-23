@@ -20,3 +20,6 @@ export '/screens/wallet/views/empty_wallet_screen.dart';
 export '/screens/wallet/views/wallet_screen.dart';
 export '../screens/profile/src/views/profile_screen.dart';
 export '/screens/user_info/views/user_info_screen.dart';
+export '/screens/onbording/views/select_sports_screen.dart';
+export '/screens/onbording/views/select_levels_screen.dart';
+export 'package:padly/screens/location/view/location_permission_screen.dart';

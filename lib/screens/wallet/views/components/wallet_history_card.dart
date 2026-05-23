@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../constants.dart';
 
@@ -25,11 +25,10 @@ class WalletHistoryCard extends StatelessWidget {
       ),
       child: ListTile(
         minLeadingWidth: 24,
-        leading: SvgPicture.asset(
-          isReturn ? "assets/icons/Return.svg" : "assets/icons/Product.svg",
+        leading: Icon(
+          isReturn ? LucideIcons.rotateCcw : LucideIcons.package,
+          size: 24,
           color: Theme.of(context).iconTheme.color,
-          height: 24,
-          width: 24,
         ),
         title: Text(isReturn ? "Return" : "Purchase"),
         subtitle: Padding(

@@ -15,6 +15,7 @@ class Game {
   final double? pricePerHour;
   final int? maxPlayers;
   final List<PadlyUser>? currentPlayers;
+  final List<PadlyUser>? joinRequests;
   final String? club;
   final double? lat;
   final double? lng;
@@ -32,6 +33,7 @@ class Game {
     this.pricePerHour,
     this.maxPlayers,
     this.currentPlayers,
+    this.joinRequests,
     this.club,
     this.lat,
     this.lng,
@@ -79,9 +81,58 @@ class Game {
               ),
             )
           : null,
+      joinRequests: json['join_requests'] != null
+          ? List<PadlyUser>.from(
+              (json['join_requests'] as List).map(
+                (player) => PadlyUser.fromJson(
+                  player is String
+                      ? jsonDecode(player)
+                      : player as Map<String, dynamic>,
+                ),
+              ),
+            )
+          : null,
       club: json['club'],
       lat: json['lat'] != null ? (json['lat'] as num).toDouble() : null,
       lng: json['lng'] != null ? (json['lng'] as num).toDouble() : null,
+    );
+  }
+
+  Game copyWith({
+    String? id,
+    PadlyUser? hostPlayer,
+    DateTime? date,
+    DateTime? startTime,
+    DateTime? endTime,
+    String? location,
+    double? distanceKm,
+    String? rankingMin,
+    String? rankingMax,
+    double? pricePerHour,
+    int? maxPlayers,
+    List<PadlyUser>? currentPlayers,
+    List<PadlyUser>? joinRequests,
+    String? club,
+    double? lat,
+    double? lng,
+  }) {
+    return Game(
+      id: id ?? this.id,
+      hostPlayer: hostPlayer ?? this.hostPlayer,
+      date: date ?? this.date,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      location: location ?? this.location,
+      distanceKm: distanceKm ?? this.distanceKm,
+      rankingMin: rankingMin ?? this.rankingMin,
+      rankingMax: rankingMax ?? this.rankingMax,
+      pricePerHour: pricePerHour ?? this.pricePerHour,
+      maxPlayers: maxPlayers ?? this.maxPlayers,
+      currentPlayers: currentPlayers ?? this.currentPlayers,
+      joinRequests: joinRequests ?? this.joinRequests,
+      club: club ?? this.club,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
     );
   }
 }
