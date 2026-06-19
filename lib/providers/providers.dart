@@ -112,6 +112,16 @@ class SelectedSportNotifier extends StateNotifier<String> {
 
 // ── Games stream (real-time via Supabase Realtime + RPC re-fetch) ──────────
 
+// ── Game detail ────────────────────────────────────────────────────────────
+
+final gameDetailProvider =
+    FutureProvider.autoDispose.family<Game?, String>((ref, gameId) async {
+  final gateway = ref.watch(gamesGatewayProvider);
+  return gateway.fetchGame(gameId);
+});
+
+// ── Games stream (real-time via Supabase Realtime + RPC re-fetch) ──────────
+
 /// Family parameter is the sport name.
 /// Provider auto-disposes (and cleans up the Realtime channel) when not watched.
 final gamesStreamProvider =
