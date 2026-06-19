@@ -81,5 +81,9 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Padly gebruikt je locatie om matches in de buurt te vinden.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Padly gebruikt je locatie om matches in de buurt te vinden.</string>
 	</dict>
 </plist>
