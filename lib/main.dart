@@ -9,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:padly/route/route_constants.dart';
 import 'package:padly/route/router.dart' as router;
 import 'package:padly/screens/user_info/src/domain/padly_user.dart';
@@ -126,7 +127,11 @@ Future<void> main() async {
   // All initialisation complete — dismiss the native splash.
   FlutterNativeSplash.remove();
 
-  runApp(MyApp(userInfo: userInfo));
+  runApp(
+    ProviderScope(
+      child: MyApp(userInfo: userInfo),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
