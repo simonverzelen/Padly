@@ -1,56 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/constants.dart';
-import 'package:provider/provider.dart';
-import 'find_match_viewmodel.dart';
-import 'game_card.dart';
+import 'package:padly/providers/providers.dart';
 import 'package:padly/screens/games/games.dart';
 
-class FindMatchScreen extends StatelessWidget {
+class FindMatchScreen extends ConsumerWidget {
   const FindMatchScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => FindMatchViewmodel(),
-      builder: (context, _) {
-        final vm = context.watch<FindMatchViewmodel>();
-        return Scaffold(
-          appBar: AppBar(
-            surfaceTintColor: Colors.transparent,
-            backgroundColor: Colors.transparent,
-            leading: IconButton(
-              icon: const Icon(LucideIcons.arrowLeft, size: 24, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            centerTitle: true,
-            title: Text(
-              "Vind een match",
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ),
-          body: _buildBody(context, vm),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedSport = ref.watch(selectedSportProvider);
+    final gamesAsync = ref.watch(gamesStreamProvider(selectedSport));
+    final currentUserAsync = ref.watch(currentUserProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft, size: 24, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: Text(
+          "Vind een match",
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: _buildBody(context, ref, selectedSport, gamesAsync, currentUserAsync),
     );
   }
 
-  Widget _buildBody(BuildContext context, FindMatchViewmodel vm) {
-    if (vm.isLoading) return const Center(child: CircularProgressIndicator());
-    if (vm.errorMessage != null) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    String selectedSport,
+    AsyncValue<List<Game>> gamesAsync,
+    AsyncValue currentUserAsync,
+  ) {
+    if (gamesAsync.isLoading && !gamesAsync.hasValue) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (gamesAsync.hasError && !gamesAsync.hasValue) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(defaultPadding),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(vm.errorMessage!, textAlign: TextAlign.center),
+              Text(
+                gamesAsync.error.toString(),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: defaultPadding),
               ElevatedButton(
-                onPressed: vm.refresh,
+                onPressed: () {
+                  // ignore: unused_result
+                  ref.refresh(gamesStreamProvider(selectedSport));
+                },
                 child: const Text('Opnieuw proberen'),
               ),
             ],
@@ -58,17 +70,24 @@ class FindMatchScreen extends StatelessWidget {
         ),
       );
     }
-    if (vm.games.isEmpty) {
+
+    final games = gamesAsync.value ?? [];
+    final currentUser = currentUserAsync.value;
+
+    if (games.isEmpty) {
       return const Center(child: Text('Geen matches gevonden'));
     }
 
     return RefreshIndicator(
       color: primaryColor,
       backgroundColor: backgroundColor,
-      onRefresh: vm.refresh,
+      onRefresh: () async {
+        // ignore: unused_result
+        ref.refresh(gamesStreamProvider(selectedSport));
+      },
       child: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _FilterChipsBar(vm: vm)),
+          SliverToBoxAdapter(child: _FilterChipsBar(selectedSport: selectedSport)),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -93,8 +112,15 @@ class FindMatchScreen extends StatelessWidget {
           SliverSafeArea(
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => GameCard(game: vm.games[index], currentUser: vm.currentUser, onReturn: vm.refresh),
-                childCount: vm.games.length,
+                (context, index) => GameCard(
+                  game: games[index],
+                  currentUser: currentUser,
+                  onReturn: () {
+                    // ignore: unused_result
+                    ref.refresh(gamesStreamProvider(selectedSport));
+                  },
+                ),
+                childCount: games.length,
               ),
             ),
           ),
@@ -105,13 +131,13 @@ class FindMatchScreen extends StatelessWidget {
 }
 
 class _FilterChipsBar extends StatelessWidget {
-  final FindMatchViewmodel vm;
-  const _FilterChipsBar({required this.vm});
+  final String selectedSport;
+  const _FilterChipsBar({required this.selectedSport});
 
   @override
   Widget build(BuildContext context) {
     final chips = [
-      _FilterChip(label: vm.selectedSport, isActive: true, hasDropdown: true),
+      _FilterChip(label: selectedSport, isActive: true, hasDropdown: true),
       const _FilterChip(label: 'P400'),
       const _FilterChip(label: 'Heren'),
       const _FilterChip(label: '0 - 15 km'),
