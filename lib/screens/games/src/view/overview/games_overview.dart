@@ -1,306 +1,319 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:padly/components/custom_modal_bottom_sheet.dart';
 import 'package:padly/constants.dart';
+import 'package:padly/providers/providers.dart';
 import 'package:padly/route/screen_export.dart';
 import 'package:padly/screens/games/games.dart';
-import 'package:provider/provider.dart';
 
-import 'games_overview_viewmodel.dart';
-
-class GamesOverview extends StatelessWidget {
+class GamesOverview extends ConsumerWidget {
   const GamesOverview({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => GamesOverviewViewmodel(),
-      builder: (context, child) {
-        final vm = context.watch<GamesOverviewViewmodel>();
-        final games = vm.games;
-        final myGames = vm.myGames;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedSport = ref.watch(selectedSportProvider);
+    final gamesAsync = ref.watch(gamesStreamProvider(selectedSport));
+    final currentUserAsync = ref.watch(currentUserProvider);
+    final sportNamesAsync = ref.watch(sportNamesProvider);
 
-        if (vm.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    // Show full-screen spinner only on the very first load (no cached value yet).
+    if (gamesAsync.isLoading && !gamesAsync.hasValue) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-        if (vm.errorMessage != null) {
-          return Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(defaultPadding),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      vm.errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: defaultPadding),
-                    ElevatedButton(
-                      onPressed: vm.refresh,
-                      child: const Text('Opnieuw proberen'),
-                    ),
-                  ],
+    // Show error only when there is no cached data to fall back on.
+    if (gamesAsync.hasError && !gamesAsync.hasValue) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(defaultPadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  gamesAsync.error.toString(),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-              ),
+                const SizedBox(height: defaultPadding),
+                ElevatedButton(
+                  onPressed: () {
+                    // ignore: unused_result
+                    ref.refresh(gamesStreamProvider(selectedSport));
+                  },
+                  child: const Text('Opnieuw proberen'),
+                ),
+              ],
             ),
-          );
-        }
+          ),
+        ),
+      );
+    }
 
-        final screenWidth = MediaQuery.of(context).size.width;
-        final textTheme = Theme.of(context).textTheme;
+    final games = gamesAsync.value ?? [];
+    final currentUser = currentUserAsync.value;
+    final availableSports = sportNamesAsync.value ?? [];
 
-        return Scaffold(
-          body: Column(
-            children: [
-              // Sticky greeting header
-              SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: defaultPadding,
-                    vertical: defaultPadding,
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final myGames = uid == null
+        ? <Game>[]
+        : games
+            .where((g) => g.currentPlayers?.any((p) => p.id == uid) == true)
+            .toList();
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      body: Column(
+        children: [
+          // Sticky greeting header
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: defaultPadding,
+                vertical: defaultPadding,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: backgroundColor,
+                      backgroundImage: currentUser?.imageUrl != null
+                          ? NetworkImage(currentUser!.imageUrl!)
+                          : null,
+                    ),
                   ),
-                  child: Row(
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
-                          color: primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: CircleAvatar(
-                          radius: 28,
-                          backgroundColor: backgroundColor,
-                          backgroundImage: vm.currentUser?.imageUrl != null
-                              ? NetworkImage(vm.currentUser!.imageUrl!)
-                              : null,
+                      Text(
+                        "Hey ${currentUser?.firstName ?? 'Speler'} \u{1F44B}",
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          Text(
-                            "Hey ${vm.currentUser?.firstName ?? 'Speler'} \u{1F44B}",
-                            style: textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
+                          Text("Klaar voor een potje ",
+                              style: textTheme.bodyMedium),
+                          GestureDetector(
+                            onTap: () => customModalBottomSheet(
+                              context,
+                              height: 420,
+                              child: _SportPickerSheet(
+                                sports: availableSports,
+                                selectedSport: selectedSport,
+                                onSportSelected: (sport) async {
+                                  await ref
+                                      .read(selectedSportProvider.notifier)
+                                      .setSport(sport);
+                                  // Sync preference to Supabase profile.
+                                  ref
+                                      .read(authBridgeProvider)
+                                      .updateUserPreferences(sport: sport);
+                                },
+                              ),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    selectedSport,
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: backgroundColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(LucideIcons.chevronDown,
+                                      size: 16, color: backgroundColor),
+                                ],
+                              ),
                             ),
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                "Klaar voor een potje ",
-                                style: textTheme.bodyMedium,
-                              ),
-                              GestureDetector(
-                                onTap: () => customModalBottomSheet(
-                                  context,
-                                  height: 420,
-                                  child: _SportPickerSheet(
-                                    sports: vm.availableSports,
-                                    selectedSport: vm.selectedSport,
-                                    onSportSelected: vm.setSelectedSport,
-                                  ),
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        vm.selectedSport,
-                                        style: textTheme.labelSmall?.copyWith(
-                                          color: backgroundColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        LucideIcons.chevronDown,
-                                        size: 16,
-                                        color: backgroundColor,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                " vandaag?",
-                                style: textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
+                          Text(" vandaag?", style: textTheme.bodyMedium),
                         ],
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-              Expanded(
-                child: RefreshIndicator(
-                  color: primaryColor,
-                  backgroundColor: backgroundColor,
-                  onRefresh: vm.refresh,
-                  child: CustomScrollView(
-                    slivers: [
-                      // Two big action buttons
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            defaultPadding / 2,
-                            defaultPadding,
-                            defaultPadding / 2,
-                            defaultPadding * 2,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: _ActionButton(
-                                  icon: LucideIcons.search,
-                                  label: 'Vind een match',
-                                  color: cardFeaturedBackgroundColor,
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    findMatchScreenRoute,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: defaultPadding / 2),
-                              Expanded(
-                                child: _ActionButton(
-                                  icon: LucideIcons.plus,
-                                  label: 'Maak een match',
-                                  color: scrollBackgroundColor,
-                                  onTap: () async {
-                                    await Navigator.pushNamed(
-                                      context,
-                                      createGameScreenRoute,
-                                    );
-                                    if (context.mounted) vm.refresh();
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // "Komende Matches" section
-                      if (myGames.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                            ),
-                            child: Text(
-                              "Komende Matches",
-                              style: textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: defaultPadding,
-                              ),
-                              child: Row(
-                                children: myGames
-                                    .map(
-                                      (g) => SizedBox(
-                                        width: screenWidth * 0.7,
-                                        child: GameCardFeatured(game: g, currentUser: vm.currentUser, onReturn: vm.refresh),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-
-                      if (games.isEmpty) ...[
-                        // Empty state
-                        const SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text('Geen matches gevonden'),
-                          ),
-                        ),
-                      ] else ...[
-                        // "Dichtstbijzijnde Matches" section
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                              defaultPadding / 2,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Dichtstbijzijnde Matches",
-                                  style: textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    findMatchScreenRoute,
-                                  ),
-                                  child: Text(
-                                    "Bekijk Alles",
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      color: whiteColor60,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) => GameCard(game: games[index], currentUser: vm.currentUser, onReturn: vm.refresh),
-                            childCount: games.length,
-                          ),
-                        ),
-                      ],
-
-                      const SliverPadding(
-                        padding: EdgeInsets.only(bottom: 100),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+
+          Expanded(
+            child: RefreshIndicator(
+              color: primaryColor,
+              backgroundColor: backgroundColor,
+              onRefresh: () async {
+                // ignore: unused_result
+                ref.refresh(gamesStreamProvider(selectedSport));
+              },
+              child: CustomScrollView(
+                slivers: [
+                  // Action buttons
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        defaultPadding / 2,
+                        defaultPadding,
+                        defaultPadding / 2,
+                        defaultPadding * 2,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: _ActionButton(
+                              icon: LucideIcons.search,
+                              label: 'Vind een match',
+                              color: cardFeaturedBackgroundColor,
+                              onTap: () => Navigator.pushNamed(
+                                  context, findMatchScreenRoute),
+                            ),
+                          ),
+                          const SizedBox(width: defaultPadding / 2),
+                          Expanded(
+                            child: _ActionButton(
+                              icon: LucideIcons.plus,
+                              label: 'Maak een match',
+                              color: scrollBackgroundColor,
+                              onTap: () async {
+                                await Navigator.pushNamed(
+                                    context, createGameScreenRoute);
+                                // Refresh after returning from create screen.
+                                if (context.mounted) {
+                                  // ignore: unused_result
+                                  ref.refresh(gamesStreamProvider(selectedSport));
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // My upcoming games
+                  if (myGames.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            defaultPadding / 2,
+                            defaultPadding / 2,
+                            defaultPadding / 2,
+                            defaultPadding / 2),
+                        child: Text(
+                          "Komende Matches",
+                          style: textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.only(bottom: defaultPadding),
+                          child: Row(
+                            children: myGames
+                                .map((g) => SizedBox(
+                                      width: screenWidth * 0.7,
+                                      child: GameCardFeatured(
+                                        game: g,
+                                        currentUser: currentUser,
+                                        onReturn: () {
+                                          // ignore: unused_result
+                                          ref.refresh(gamesStreamProvider(selectedSport));
+                                        },
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // All nearby games
+                  if (games.isEmpty) ...[
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: Text('Geen matches gevonden')),
+                    ),
+                  ] else ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                            defaultPadding / 2,
+                            defaultPadding / 2,
+                            defaultPadding / 2,
+                            defaultPadding / 2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Dichtstbijzijnde Matches",
+                              style: textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                  context, findMatchScreenRoute),
+                              child: Text(
+                                "Bekijk Alles",
+                                style: textTheme.bodyMedium
+                                    ?.copyWith(color: whiteColor60),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => GameCard(
+                          game: games[index],
+                          currentUser: currentUser,
+                          onReturn: () {
+                            // ignore: unused_result
+                            ref.refresh(gamesStreamProvider(selectedSport));
+                          },
+                        ),
+                        childCount: games.length,
+                      ),
+                    ),
+                  ],
+
+                  const SliverPadding(
+                      padding: EdgeInsets.only(bottom: 100)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -327,7 +340,8 @@ class _SportPickerSheet extends StatelessWidget {
               defaultPadding, defaultPadding, defaultPadding, 8),
           child: Text(
             'Kies een sport',
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style:
+                textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
         const Divider(color: cardBackgroundWithOpacity),
@@ -391,9 +405,10 @@ class _ActionButton extends StatelessWidget {
             const Spacer(),
             Text(
               label,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
