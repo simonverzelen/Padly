@@ -7,14 +7,10 @@ import '../domain/game.dart';
 
 class GamesGateway {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   final SupabaseClient supabase;
   final SupabaseFirebaseAuthBridge authBridge;
 
-  GamesGateway({
-    required this.supabase,
-    required this.authBridge,
-  });
+  GamesGateway({required this.supabase, required this.authBridge});
 
   Future<List<Game>> fethcGames() async {
     try {
@@ -28,29 +24,28 @@ class GamesGateway {
     }
   }
 
-  Future<List<Game>?> fethSupabaseGames({String sport = 'Padel'}) async {
+  Future<List<Game>?> fetchSupabaseGames({
+    String sport = 'Padel',
+    double lat = 50.83,
+    double lng = 3.26,
+  }) async {
     try {
-      // NOTE: lat/lng are hardcoded for now (Kortrijk, Belgium).
-      // TODO: replace with the user's actual device location.
       final response = await supabase.rpc('get_games_filtered', params: {
-        'search_lon': 3.26,
-        'search_lat': 50.83,
+        'search_lon': lng,
+        'search_lat': lat,
         'search_radius_km': 100,
         'min_ranking': null,
         'max_ranking': null,
         'start_time': null,
         'end_time': null,
-        'sort_by': 'price', //distance, ranking, price, start_time, endt_time,
+        'sort_by': 'distance',
         'sort_direction': 'asc',
         'sport_name': sport,
       });
-
       final data = response as List<dynamic>;
-
-      final List<Game> games = List<Game>.from(
+      return List<Game>.from(
         data.map((gameData) => Game.fromJson(gameData)).toList(),
       );
-      return games;
     } catch (e) {
       return null;
     }
@@ -58,13 +53,10 @@ class GamesGateway {
 
   Future<Map<String, dynamic>> createGame(GameCreate game) async {
     try {
-      await authBridge.signInToSupabaseWithFirebase();
-
+      await authBridge.applyAuthHeader();
       final insertedRow = await supabase
           .from('games')
-          .insert({
-            ...game.toInsertJson(),
-          })
+          .insert({...game.toInsertJson()})
           .select()
           .single();
       return insertedRow;
@@ -73,22 +65,16 @@ class GamesGateway {
     }
   }
 
-  Future<void> requestToJoin(
-    String gameId,
-    Map<String, dynamic> userJson,
-  ) async {
-    await authBridge.signInToSupabaseWithFirebase();
+  Future<void> requestToJoin(String gameId, Map<String, dynamic> userJson) async {
+    await authBridge.applyAuthHeader();
     await supabase.rpc('request_to_join', params: {
       'game_id': gameId,
       'user_json': userJson,
     });
   }
 
-  Future<void> cancelJoinRequest(
-    String gameId,
-    String userId,
-  ) async {
-    await authBridge.signInToSupabaseWithFirebase();
+  Future<void> cancelJoinRequest(String gameId, String userId) async {
+    await authBridge.applyAuthHeader();
     await supabase.rpc('cancel_join_request', params: {
       'game_id': gameId,
       'user_id': userId,
@@ -99,7 +85,7 @@ class GamesGateway {
     String gameId,
     List<Map<String, dynamic>> newRequests,
   ) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase
         .from('games')
         .update({'join_requests': newRequests})
@@ -111,7 +97,7 @@ class GamesGateway {
     List<Map<String, dynamic>> newCurrentPlayers,
     List<Map<String, dynamic>> newJoinRequests,
   ) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase.from('games').update({
       'current_players': newCurrentPlayers,
       'join_requests': newJoinRequests,
@@ -122,7 +108,7 @@ class GamesGateway {
     String gameId,
     List<Map<String, dynamic>> newCurrentPlayers,
   ) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase
         .from('games')
         .update({'current_players': newCurrentPlayers})
@@ -130,7 +116,7 @@ class GamesGateway {
   }
 
   Future<void> removePlayerSelf(String gameId, String userId) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase.rpc('remove_player_self', params: {
       'p_game_id': gameId,
       'p_user_id': userId,
@@ -138,7 +124,7 @@ class GamesGateway {
   }
 
   Future<void> updateGame(String gameId, GameCreate game) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase
         .from('games')
         .update(game.toInsertJson())
@@ -146,17 +132,13 @@ class GamesGateway {
   }
 
   Future<void> deleteGame(String gameId) async {
-    await authBridge.signInToSupabaseWithFirebase();
+    await authBridge.applyAuthHeader();
     await supabase.from('games').delete().eq('id', gameId);
   }
 
   Future<Game?> fetchGame(String gameId) async {
-    await authBridge.signInToSupabaseWithFirebase();
-    final row = await supabase
-        .from('games')
-        .select()
-        .eq('id', gameId)
-        .single();
+    await authBridge.applyAuthHeader();
+    final row = await supabase.from('games').select().eq('id', gameId).single();
     return Game.fromJson(row);
   }
 }

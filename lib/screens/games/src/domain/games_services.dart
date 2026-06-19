@@ -13,7 +13,7 @@ class GamesServices {
 
   Future<List<Game>> fetchGames({String sport = 'Padel'}) async {
     try {
-      final games = await _gamesGateway.fethSupabaseGames(sport: sport);
+      final games = await _gamesGateway.fetchSupabaseGames(sport: sport);
       return games ?? [];
     } catch (e) {
       rethrow;
