@@ -6,13 +6,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart' as ph;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../screens/games/src/data/games_gateway.dart';
-import '../screens/games/src/data/sports_repository.dart';
-import '../screens/games/src/data/user_preferences_cache.dart';
-import '../screens/games/src/domain/game.dart';
-import '../screens/user_info/src/domain/padly_user.dart';
-import '../screens/user_info/src/domain/user_service.dart';
-import '../services/supabase_firebase_auth_bridge.dart';
+import '../features/games/data/repositories/games_gateway.dart';
+import '../features/games/data/repositories/sports_repository.dart';
+import '../features/games/data/caches/user_preferences_cache.dart';
+import '../features/games/domain/entities/game.dart';
+import 'package:padly/features/users/domain/entities/padly_user.dart';
+import 'package:padly/features/users/domain/services/user_service.dart';
+import '../core/services/supabase_firebase_auth_bridge.dart';
 
 // ── Infrastructure ─────────────────────────────────────────────────────────
 

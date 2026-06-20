@@ -10,17 +10,17 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:padly/route/route_constants.dart';
-import 'package:padly/route/router.dart' as router;
-import 'package:padly/screens/user_info/src/domain/padly_user.dart';
-import 'package:padly/screens/user_info/src/domain/user_service.dart';
-import 'package:padly/theme/app_theme.dart';
-import 'package:padly/utils/seed_mock_users.dart';
+import 'package:padly/core/route/route_constants.dart';
+import 'package:padly/core/route/router.dart' as router;
+import 'package:padly/features/users/domain/entities/padly_user.dart';
+import 'package:padly/features/users/domain/services/user_service.dart';
+import 'package:padly/core/theme/app_theme.dart';
+import 'package:padly/core/utils/seed_mock_users.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:padly/screens/games/src/data/sports_repository.dart';
+import 'package:padly/features/games/data/repositories/sports_repository.dart';
 
-import 'config/env.dart';
+import 'core/config/env.dart';
 
 import 'firebase_options.dart';
 

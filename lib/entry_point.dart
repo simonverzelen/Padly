@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:padly/route/screen_export.dart';
+import 'package:padly/core/route/screen_export.dart';
 
-import 'components/bottom_navigation.dart';
+import 'core/components/bottom_navigation.dart';
 
 class EntryPoint extends StatelessWidget {
   const EntryPoint({super.key});
