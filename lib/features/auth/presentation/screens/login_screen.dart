@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,17 +64,34 @@ class _LoginScreenState extends State<LoginScreen> {
                     height:
                         size.height > 700 ? size.height * 0.1 : defaultPadding,
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        authService.signin(
-                          email: emailController.text,
-                          password: passwordController.text,
-                          context: context,
-                        );
-                      }
-                    },
-                    child: const Text("Log in"),
+                  IgnorePointer(
+                    ignoring: _isLoading,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isLoading = true);
+                          try {
+                            await authService.signin(
+                              email: emailController.text,
+                              password: passwordController.text,
+                              context: context,
+                            );
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
+                          }
+                        }
+                      },
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: backgroundColor,
+                              ),
+                            )
+                          : const Text("Log in"),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
