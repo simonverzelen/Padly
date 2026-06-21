@@ -37,10 +37,37 @@ class _CreateMatchScreenState extends ConsumerState<CreateMatchScreen> {
 
     ref.listen<CreateGameState>(createGameNotifierProvider, (previous, next) {
       if (previous?.isSuccess != next.isSuccess && next.isSuccess) {
-        Navigator.pushNamedAndRemoveUntil(
+        final selectedDate = next.dateList[next.selectedDate!];
+        final startTime = DateTime(
+          selectedDate.year,
+          selectedDate.month,
+          selectedDate.day,
+          next.selectedTime!.hour,
+          next.selectedTime!.minute,
+        );
+        final durationMinutes = next.playTime != null
+            ? next.playTimeList[next.playTime!]
+            : 90;
+        final endTime = startTime.add(Duration(minutes: durationMinutes));
+        final game = Game(
+          id: next.createdGameId,
+          club: next.location?.name,
+          location: next.location?.city,
+          date: selectedDate,
+          startTime: startTime,
+          endTime: endTime,
+          rankingMin: next.levelList[next.minLevelIndex],
+          rankingMax: next.levelList[next.maxLevelIndex],
+          maxPlayers: int.tryParse(
+            next.playersAmountList[next.playersAmountIndex ?? 1],
+          ),
+          pricePerHour: next.price,
+          currentPlayers: next.currentPlayers,
+        );
+        Navigator.pushReplacementNamed(
           context,
-          entryPointScreenRoute,
-          (_) => false,
+          gameCreatedScreenRoute,
+          arguments: {'game': game},
         );
       } else if (previous?.error != next.error && next.error != null) {
         ScaffoldMessenger.of(context)
