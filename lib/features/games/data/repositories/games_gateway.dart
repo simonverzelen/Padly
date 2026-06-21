@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:padly/core/services/supabase_firebase_auth_bridge.dart';
@@ -47,7 +48,27 @@ class GamesGateway {
         data.map((gameData) => Game.fromJson(gameData)).toList(),
       );
     } catch (e) {
+      debugPrint('fetchSupabaseGames error: $e');
       return null;
+    }
+  }
+
+  Future<List<Game>> fetchMyGames(String userId) async {
+    try {
+      await authBridge.applyAuthHeader();
+      final response = await supabase
+          .from('games')
+          .select()
+          .eq('host_uid', userId)
+          .gte('start_time', DateTime.now().toUtc().toIso8601String())
+          .order('start_time', ascending: true);
+      final data = response as List<dynamic>;
+      return List<Game>.from(
+        data.map((gameData) => Game.fromJson(gameData)).toList(),
+      );
+    } catch (e) {
+      debugPrint('fetchMyGames error: $e');
+      return [];
     }
   }
 

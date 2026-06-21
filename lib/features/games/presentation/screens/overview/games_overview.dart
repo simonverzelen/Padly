@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -15,6 +14,7 @@ class GamesOverview extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedSport = ref.watch(selectedSportProvider);
     final gamesAsync = ref.watch(gamesStreamProvider(selectedSport));
+    final myGamesAsync = ref.watch(myGamesProvider);
     final currentUserAsync = ref.watch(currentUserProvider);
     final sportNamesAsync = ref.watch(sportNamesProvider);
 
@@ -56,12 +56,7 @@ class GamesOverview extends ConsumerWidget {
     final currentUser = currentUserAsync.value;
     final availableSports = sportNamesAsync.value ?? [];
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    final myGames = uid == null
-        ? <Game>[]
-        : games
-            .where((g) => g.currentPlayers?.any((p) => p.id == uid) == true)
-            .toList();
+    final myGames = myGamesAsync.value ?? [];
 
     final screenWidth = MediaQuery.of(context).size.width;
     final textTheme = Theme.of(context).textTheme;
@@ -168,6 +163,8 @@ class GamesOverview extends ConsumerWidget {
               onRefresh: () async {
                 // ignore: unused_result
                 ref.refresh(gamesStreamProvider(selectedSport));
+                // ignore: unused_result
+                ref.refresh(myGamesProvider);
               },
               child: CustomScrollView(
                 slivers: [
@@ -205,6 +202,8 @@ class GamesOverview extends ConsumerWidget {
                                 if (context.mounted) {
                                   // ignore: unused_result
                                   ref.refresh(gamesStreamProvider(selectedSport));
+                                  // ignore: unused_result
+                                  ref.refresh(myGamesProvider);
                                 }
                               },
                             ),
@@ -246,6 +245,8 @@ class GamesOverview extends ConsumerWidget {
                                         onReturn: () {
                                           // ignore: unused_result
                                           ref.refresh(gamesStreamProvider(selectedSport));
+                                          // ignore: unused_result
+                                          ref.refresh(myGamesProvider);
                                         },
                                       ),
                                     ))
@@ -299,6 +300,8 @@ class GamesOverview extends ConsumerWidget {
                           onReturn: () {
                             // ignore: unused_result
                             ref.refresh(gamesStreamProvider(selectedSport));
+                            // ignore: unused_result
+                            ref.refresh(myGamesProvider);
                           },
                         ),
                         childCount: games.length,

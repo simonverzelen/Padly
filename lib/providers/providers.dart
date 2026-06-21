@@ -110,14 +110,21 @@ class SelectedSportNotifier extends StateNotifier<String> {
   }
 }
 
-// ── Games stream (real-time via Supabase Realtime + RPC re-fetch) ──────────
-
 // ── Game detail ────────────────────────────────────────────────────────────
 
 final gameDetailProvider =
     FutureProvider.autoDispose.family<Game?, String>((ref, gameId) async {
   final gateway = ref.watch(gamesGatewayProvider);
   return gateway.fetchGame(gameId);
+});
+
+// ── My upcoming games ──────────────────────────────────────────────────────
+
+final myGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
+  final gateway = ref.watch(gamesGatewayProvider);
+  final uid = fb_auth.FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return [];
+  return gateway.fetchMyGames(uid);
 });
 
 // ── Games stream (real-time via Supabase Realtime + RPC re-fetch) ──────────
@@ -128,20 +135,29 @@ final gamesStreamProvider =
     StreamProvider.autoDispose.family<List<Game>, String>((ref, sport) {
   final gateway = ref.watch(gamesGatewayProvider);
   final supabase = ref.watch(supabaseClientProvider);
-  final location =
-      ref.watch(locationProvider).asData?.value ?? const LocationState();
 
   final controller = StreamController<List<Game>>();
 
-  // Initial fetch
-  gateway
-      .fetchSupabaseGames(
-        sport: sport,
-        lat: location.effectiveLat,
-        lng: location.effectiveLng,
-      )
-      .then((games) {
+  Future<void> fetchAndEmit(LocationState location) async {
+    final games = await gateway.fetchSupabaseGames(
+      sport: sport,
+      lat: location.effectiveLat,
+      lng: location.effectiveLng,
+    );
     if (!controller.isClosed) controller.add(games ?? []);
+  }
+
+  // Read current location without watching — avoids stream restart on location change.
+  final initialLocation =
+      ref.read(locationProvider).asData?.value ?? const LocationState();
+  fetchAndEmit(initialLocation);
+
+  // When real device location arrives, re-fetch into the same stream.
+  ref.listen<AsyncValue<LocationState>>(locationProvider, (previous, next) {
+    final loc = next.asData?.value;
+    if (loc != null && loc.lat != null) {
+      fetchAndEmit(loc);
+    }
   });
 
   // Subscribe to Realtime changes on the games table.
@@ -154,10 +170,12 @@ final gamesStreamProvider =
         schema: 'public',
         table: 'games',
         callback: (payload) async {
+          final loc =
+              ref.read(locationProvider).asData?.value ?? const LocationState();
           final games = await gateway.fetchSupabaseGames(
             sport: sport,
-            lat: location.effectiveLat,
-            lng: location.effectiveLng,
+            lat: loc.effectiveLat,
+            lng: loc.effectiveLng,
           );
           if (!controller.isClosed) controller.add(games ?? []);
         },
