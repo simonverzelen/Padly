@@ -11,6 +11,7 @@ import 'package:padly/core/route/screen_export.dart';
 
 import 'package:padly/features/games/domain/entities/game.dart';
 import 'package:padly/features/games/presentation/screens/overview/requests_overview.dart';
+import 'package:padly/features/games/domain/services/game_share_service.dart';
 import 'package:padly/features/games/presentation/notifiers/game_detail_viewmodel.dart';
 import 'package:padly/features/users/domain/entities/padly_user.dart';
 
@@ -735,11 +736,12 @@ class _CurrentPlayersList extends ConsumerWidget {
   }
 }
 
-class _Buttons extends StatelessWidget {
+class _Buttons extends ConsumerWidget {
   const _Buttons();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final game = ref.watch(gameDetailNotifierProvider).game;
     return Padding(
       padding: const EdgeInsets.only(top: defaultPadding),
       child: Row(
@@ -756,6 +758,13 @@ class _Buttons extends StatelessWidget {
             text: "Voeg Toe Aan Kalender",
             icon: LucideIcons.calendar,
             press: () => {},
+            isActive: false,
+          ),
+          const SizedBox(width: defaultPadding),
+          CategoryButton(
+            text: "Deel",
+            icon: LucideIcons.share2,
+            press: () => GameShareService().shareGame(game),
             isActive: false,
           ),
         ],
