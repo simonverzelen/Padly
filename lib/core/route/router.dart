@@ -12,6 +12,7 @@ import 'package:padly/features/games/presentation/screens/overview/find_match_sc
 import 'package:padly/features/games/presentation/screens/overview/requests_overview.dart';
 import 'package:padly/features/games/presentation/screens/detail/search_club_screen.dart';
 import 'package:padly/core/route/screen_export.dart';
+import 'package:padly/features/games/presentation/screens/detail/game_created_screen.dart';
 
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -250,6 +251,32 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               initialPlayers: initialPlayers,
               lockedPlayerId: lockedPlayerId,
             ),
+          ],
+        ),
+      );
+    case gameCreatedScreenRoute:
+      final args = settings.arguments;
+      final Game? game =
+          (args is Map<String, dynamic>) ? args['game'] as Game? : null;
+
+      if (game == null) {
+        return MaterialPageRoute(
+          builder: (_) => const Scaffold(
+            body: Center(child: Text('Match niet gevonden.')),
+          ),
+        );
+      }
+
+      return MaterialPageRoute(
+        builder: (_) => Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            GameCreatedScreen(game: game),
           ],
         ),
       );

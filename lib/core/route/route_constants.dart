@@ -20,6 +20,7 @@ const String emptyWalletScreenRoute = "empty_wallet";
 const String walletScreenRoute = "wallet";
 const String createGameScreenRoute = "create_game";
 const String gameDetailScreenRoute = "game_detail";
+const String gameCreatedScreenRoute = 'game_created';
 const String gameRequestsScreenRoute = "game_requests";
 const String searchClubScreenRoute = "search_club";
 const String addPlayersScreenRoute = "add_players";
