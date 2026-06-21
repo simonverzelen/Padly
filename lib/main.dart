@@ -19,12 +19,29 @@ import 'package:padly/core/utils/seed_mock_users.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:padly/features/games/data/repositories/sports_repository.dart';
+import 'package:app_links/app_links.dart';
+import 'package:padly/features/games/domain/services/games_service.dart';
 
 import 'core/config/env.dart';
 
 import 'firebase_options.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
+
+void _handleDeepLink(Uri uri) {
+  if (uri.scheme == 'padly' &&
+      uri.host == 'game' &&
+      uri.pathSegments.isNotEmpty) {
+    final gameId = uri.pathSegments.first;
+    GamesServices().fetchGame(gameId).then((game) {
+      if (game == null) return;
+      navigatorKey.currentState?.pushNamed(
+        gameDetailScreenRoute,
+        arguments: {'game': game},
+      );
+    });
+  }
+}
 
 // function to listen to background changes
 @pragma('vm:entry-point')
@@ -132,6 +149,14 @@ Future<void> main() async {
       child: MyApp(userInfo: userInfo),
     ),
   );
+
+  // Deep link handling — iOS & Android
+  final appLinks = AppLinks();
+  appLinks.uriLinkStream.listen(_handleDeepLink);
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final initialUri = await appLinks.getInitialLink();
+    if (initialUri != null) _handleDeepLink(initialUri);
+  });
 }
 
 class MyApp extends StatelessWidget {
