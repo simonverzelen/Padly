@@ -17,6 +17,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +78,32 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                     ),
                   ),
                   const SizedBox(height: defaultPadding),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        authService.resetPassword(
-                          email: emailController.text,
-                        );
-                      }
-                    },
-                    child: const Text("Send recovery link"),
+                  IgnorePointer(
+                    ignoring: _isLoading,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isLoading = true);
+                          try {
+                            await authService.resetPassword(
+                              email: emailController.text,
+                            );
+                          } finally {
+                            if (mounted) setState(() => _isLoading = false);
+                          }
+                        }
+                      },
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: backgroundColor,
+                              ),
+                            )
+                          : const Text("Send recovery link"),
+                    ),
                   ),
                   const SizedBox(height: defaultPadding),
                   Row(
