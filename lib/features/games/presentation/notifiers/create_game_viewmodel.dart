@@ -28,6 +28,7 @@ class CreateGameState {
   final double? price;
   final ClubPlace? location;
   final String? gameId;
+  final String? createdGameId;
   final bool canCreateGame;
   final bool isSaving;
   final bool isSuccess;
@@ -62,6 +63,7 @@ class CreateGameState {
     this.price,
     this.location,
     this.gameId,
+    this.createdGameId,
     this.canCreateGame = false,
     this.isSaving = false,
     this.isSuccess = false,
@@ -89,6 +91,7 @@ class CreateGameState {
     Object? price = _sentinel,
     Object? location = _sentinel,
     Object? gameId = _sentinel,
+    Object? createdGameId = _sentinel,
     bool? canCreateGame,
     bool? isSaving,
     bool? isSuccess,
@@ -129,6 +132,9 @@ class CreateGameState {
           : location as ClubPlace?,
       gameId:
           identical(gameId, _sentinel) ? this.gameId : gameId as String?,
+      createdGameId: identical(createdGameId, _sentinel)
+          ? this.createdGameId
+          : createdGameId as String?,
       canCreateGame: canCreateGame ?? this.canCreateGame,
       isSaving: isSaving ?? this.isSaving,
       isSuccess: isSuccess ?? this.isSuccess,
@@ -418,7 +424,10 @@ class CreateGameNotifier extends AutoDisposeNotifier<CreateGameState> {
           sportId: sportId,
         );
 
-        await _gameService.createGame(gameCreateWithSport);
+        final result = await _gameService.createGame(gameCreateWithSport);
+        final createdId = result['id'] as String;
+        state = state.copyWith(isSuccess: true, createdGameId: createdId);
+        return;
       }
 
       state = state.copyWith(isSuccess: true);
