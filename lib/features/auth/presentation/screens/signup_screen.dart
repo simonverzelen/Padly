@@ -96,6 +96,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ignoring: _isLoading,
                     child: ElevatedButton(
                       onPressed: () async {
+                        if (!_formKey.currentState!.validate() || !checked) return;
                         setState(() => _isLoading = true);
                         try {
                           await authService.signup(
