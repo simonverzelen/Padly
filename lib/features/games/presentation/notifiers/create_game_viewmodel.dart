@@ -425,7 +425,7 @@ class CreateGameNotifier extends AutoDisposeNotifier<CreateGameState> {
         );
 
         final result = await _gameService.createGame(gameCreateWithSport);
-        final createdId = result['id'] as String;
+        final createdId = result['id']?.toString() ?? '';
         state = state.copyWith(isSuccess: true, createdGameId: createdId);
         return;
       }

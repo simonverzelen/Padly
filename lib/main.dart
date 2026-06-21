@@ -28,6 +28,10 @@ import 'firebase_options.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+// Held at top-level so the subscription is never garbage-collected.
+// ignore: unused_element
+StreamSubscription<Uri>? _deepLinkSubscription;
+
 void _handleDeepLink(Uri uri) {
   if (uri.scheme == 'padly' &&
       uri.host == 'game' &&
@@ -152,7 +156,7 @@ Future<void> main() async {
 
   // Deep link handling — iOS & Android
   final appLinks = AppLinks();
-  appLinks.uriLinkStream.listen(_handleDeepLink);
+  _deepLinkSubscription = appLinks.uriLinkStream.listen(_handleDeepLink);
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     final initialUri = await appLinks.getInitialLink();
     if (initialUri != null) _handleDeepLink(initialUri);

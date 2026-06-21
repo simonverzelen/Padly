@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:padly/core/constants.dart';
 import 'package:padly/core/route/route_constants.dart';
 import 'package:padly/features/games/domain/entities/game.dart';
 import 'package:padly/features/games/domain/services/game_share_service.dart';
@@ -21,7 +22,7 @@ class GameCreatedScreen extends StatelessWidget {
               const Icon(
                 LucideIcons.trophy,
                 size: 72,
-                color: Color(0xFF4CAF50),
+                color: successColor,
               ),
               const SizedBox(height: 24),
               Text(

@@ -10,6 +10,7 @@ class GameShareService {
   ];
 
   Future<void> shareGame(Game game) async {
+    if (game.id == null) return;
     await Share.share(buildGameShareText(game));
   }
 
@@ -17,8 +18,10 @@ class GameShareService {
     final venue = game.club ?? game.location ?? 'een padelbaan';
     final datePart = game.startTime != null ? _formatDate(game.startTime!) : '';
     final timePart = game.startTime != null ? _formatTime(game.startTime!) : '';
-    final deepLink = 'padly://game/${game.id}';
-    return 'Kom meespelen bij $venue op $datePart om $timePart! 🎾\n$deepLink';
+    final deepLink = game.id != null ? 'padly://game/${game.id}' : null;
+    return deepLink != null
+        ? 'Kom meespelen bij $venue op $datePart om $timePart! 🎾\n$deepLink'
+        : 'Kom meespelen bij $venue op $datePart om $timePart! 🎾';
   }
 
   String formatDateTime(DateTime dt) => '${_formatDate(dt)} om ${_formatTime(dt)}';
