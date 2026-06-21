@@ -15,14 +15,15 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  final AuthService authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool checked = false;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    final AuthService authService = AuthService();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -91,17 +92,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                   const SizedBox(height: defaultPadding * 2),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await authService.signup(
-                        email: emailController.text,
-                        password: passwordController.text,
-                        context: context,
-                      );
-
-                      showAccountCreatedBottomSheet(context);
-                    },
-                    child: const Text("Continue"),
+                  IgnorePointer(
+                    ignoring: _isLoading,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        setState(() => _isLoading = true);
+                        try {
+                          await authService.signup(
+                            email: emailController.text,
+                            password: passwordController.text,
+                            context: context,
+                          );
+                          // ignore: use_build_context_synchronously
+                          if (mounted) showAccountCreatedBottomSheet(context);
+                        } finally {
+                          if (mounted) setState(() => _isLoading = false);
+                        }
+                      },
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: backgroundColor,
+                              ),
+                            )
+                          : const Text("Continue"),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
